@@ -1,0 +1,49 @@
+
+
+library x = Maxxon/motors
+library x = Maxxon#20160223/motors
+
+
+
+git@github.com:AndreaCensi/mcdp.git
+
+git@github.com:mcdps/ns-v1-stdlib.git
+
+git@github.com:mcdps/ns-v1-andrea.git
+
+
+
+git@github.com:mcdps/ns-v1-Maxxon-user.git
+
+    user.yaml
+        password:
+        user
+
+    public.mcdpshelf/
+        mcdpshelf.yaml
+        lib1.mcdplib/
+            mcdplib.yaml
+                desc_short_md: Description
+                desc_long_md:
+                    This is a long paragraph that discussed the library
+
+    private.mcdpshelf/
+        lib1.mcdplib
+
+
+
+
+import Maxxon::motors as motors
+
+
+
+import Andrea :: motors #20160223 as motors
+
+
+motor = any Motor sold by Maxxon
+
+
+a = Maxxon::motors.motor
+
+
+choose among any Motor provided by Maxxon or MEllis)
