@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 from collections import OrderedDict
-
-from contracts import contract
-from mcdp.logs import logger
-from mcdp_docs.minimal_doc import add_extra_css
-from mcdp_docs.tocs import substituting_empty_links, LABEL_WHAT_NUMBER,\
-    LABEL_NAME, LABEL_NUMBER, LABEL_WHAT
-from mcdp_utils_xml import add_class
-
-
+ 
 import os
 import sys
 import warnings
@@ -125,7 +117,8 @@ def manual_join(template, files_contents, bibfile, stylesheet, remove=None, extr
 
     bibhere = d.find('div', id='put-bibliography-here')
     if bibhere is None:
-        logger.warning('Could not find #put-bibliography-here in document. Adding one at end of document')
+        logger.warning('Could not find #put-bibliography-here in document.'
+                       'Adding one at end of document')
         bibhere = Tag(name='div')
         bibhere.attrs['id'] = 'put-bibliography-here'
         d.find('body').append(bibhere)
