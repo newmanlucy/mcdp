@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 from collections import namedtuple
-from contracts.utils import indent
 from copy import deepcopy
-from mcdp.exceptions import MCDPException, DPSyntaxError, DPSemanticError,\
-    DPNotImplementedError
-from mcdp.logs import logger
-from mcdp_library.specs_def import specs
-from mcdp_library_tests.tests import gives_syntax_error, gives_semantic_error,\
-    gives_not_implemented_error
-from mcdp_utils_misc import create_tmpdir
 import os
 import shutil
 import time
 
 from contracts import contract
-from quickapp import QuickApp
+from contracts.utils import indent
 
-from .host_instance import HostInstance
-from .library_view import TheContext
+from mcdp.exceptions import MCDPException, DPSyntaxError, DPSemanticError, \
+    DPNotImplementedError
+from mcdp.logs import logger
 from mcdp_hdb_mcdp.host_cache import HostCache
+from mcdp_hdb_mcdp.host_instance import HostInstance
+from mcdp_hdb_mcdp.library_view import TheContext
+from mcdp_library.specs_def import specs
+from mcdp_library_tests.tests import gives_syntax_error, gives_semantic_error, \
+    gives_not_implemented_error
+from mcdp_utils_misc import create_tmpdir
+from quickapp import QuickApp
 
 
 __all__ = [
