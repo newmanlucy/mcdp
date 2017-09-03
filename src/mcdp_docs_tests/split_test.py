@@ -1,12 +1,12 @@
-from comptests.registrar import run_module_tests, comptest
-from mcdp_library.library import MCDPLibrary
-from mcdp_docs.pipeline import render_complete
-from mcdp_docs.manual_join_imp import manual_join, split_in_files,\
-    add_prev_next_links, update_refs, write_split_files
-from mcdp_tests import logger
 from bs4 import BeautifulSoup
-from bs4.element import Tag
-import os
+
+from comptests.registrar import run_module_tests, comptest
+from mcdp_docs.manual_join_imp import manual_join, split_in_files,\
+    add_prev_next_links, update_refs, get_id2filename, create_link_base
+from mcdp_docs.pipeline import render_complete
+from mcdp_library.library import MCDPLibrary
+from mcdp_tests import logger
+
 
 @comptest
 def document_split():
@@ -20,13 +20,16 @@ def document_split():
         f.write(html)
     logger.info('written on %s' % fn)
      
-    
     filename2contents = split_in_files(soup)
+    id2filename = get_id2filename(filename2contents)
     add_prev_next_links(filename2contents)
-    update_refs(filename2contents)
+    update_refs(filename2contents, id2filename)
         
-    d = 'out/sec'
-    write_split_files(filename2contents, d)
+    linkbase='link.html'
+    filename2contents[linkbase] = create_link_base(id2filename)
+    
+#     d = 'out/sec'
+#     write_split_files(filename2contents, d)
 
     
 #     print html
@@ -37,8 +40,7 @@ def get_split_test_document():
     realpath = 'internal'
     raise_errors = True
     rendered = render_complete(library, md, raise_errors, realpath, generate_pdf=False,
-                    check_refs=True, do_math=True, filter_soup=None,
-                    raise_missing_image_errors = False)
+                    check_refs=True, do_math=True, filter_soup=None)
     
     files_contents = [(('unused', 'unusued'), rendered)]
     bibfile = None

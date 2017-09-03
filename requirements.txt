@@ -1,7 +1,6 @@
 pint
 pyparsing
 networkx
-pint
 watchdog
 pyramid
 pyramid_jinja2
@@ -9,9 +8,8 @@ pyramid_debugtoolbar
 bs4
 nose
 reprep
-
-chardet
-pillow
+pygments
+pygments_markdown_lexer
 bcrypt
 markdown
 junit_xml
@@ -33,3 +31,5 @@ decentlogs
 
 #numpy
 #matplotlib
+chardet
+pillow

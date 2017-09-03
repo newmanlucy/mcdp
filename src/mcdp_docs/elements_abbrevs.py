@@ -1,4 +1,4 @@
-from mcdp_utils_xml.add_class_and_style import add_class
+from mcdp_utils_xml import add_class
 
 from bs4.element import Tag, NavigableString
 
@@ -15,7 +15,6 @@ def other_abbrevs(soup):
         
         <p>TODO:...</p> -> <div class="todo"><p><span>TODO:</span></p>
     """ 
-    
     
     translate = {
         'v': 'mcdp-value',
@@ -43,10 +42,51 @@ def substitute_special_paragraphs(soup):
         'Task: ': 'special-par-task',
         'Remark: ': 'special-par-remark',  
         'Note: ': 'special-par-note',
+        'Symptom: ': 'special-par-symptom',
+        'Resolution: ': 'special-par-resolution',
+        'Bad:': 'special-par-bad',
+        'Better:': 'special-par-better',
+        'Warning:': 'special-par-warning',
+        'Q:': 'special-par-question',
+        'A:': 'special-par-answer',
+        "Assigned: ": 'special-par-assigned',
+        "Author: ": 'special-par-author',
+        "Maintainer: ": 'special-par-maintainer',
+        "Point of contact: ": 'special-par-point-of-contact',
+        "Slack channel: ": 'special-par-slack-channel',
+        # Reference and See are the same thing
+        'See: ': 'special-par-see',
+        'Reference: ': 'special-par-see',
+        'Requires: ': 'special-par-requires',
+        'Results: ': 'special-par-results',
+        'Result: ': 'special-par-results',
+        'Next steps: ': 'special-par-next',
+        'Next Steps: ': 'special-par-next',
+        'Next: ': 'special-par-next',
+        'Recommended: ': 'special-par-recommended',
+        'See also: ': 'special-par-see-also',
+        
+        'Comment: ': 'comment',
+        'Question: ': 'question',
+        'Doubt: ': 'doubt',
     } 
     
     for prefix, klass in prefix2class.items():
         substitute_special_paragraph(soup, prefix, klass)
+        
+    make_details = ['comment', 'question', 'doubt']
+    for c in make_details:
+        for e in list(soup.select('.%s' % c)):
+            details = Tag(name='details')
+            add_class(details, c)
+            summary = Tag(name='summary')
+            summary.append(c)
+            details.append(summary)
+            rest = e.__copy__()
+            details.append(rest)
+            e.replace_with(details)
+            
+#             e.append('Found')
         
 def substitute_special_paragraph(soup, prefix, klass):
     """ 

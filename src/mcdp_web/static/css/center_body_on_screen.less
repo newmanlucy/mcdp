@@ -14,8 +14,9 @@
         background-color: white;
 
         /** essentially these are our "page margins" **/
-        border-right: solid @fake_margins white;
-        border-left: solid @fake_margins white;
+        // these work but should be disabled on screen
+        // border-right: solid @fake_margins white;
+        // border-left: solid @fake_margins white;
         margin-top: 0;
     }
 
@@ -34,6 +35,6 @@
     /** add space for h1, in place of page breaks **/
 
     h1:not(#booktitle) {
-        margin-top: 4em;
+        margin-top: 1.5em;
     }
 }

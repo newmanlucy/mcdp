@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
+from contracts.utils import raise_desc, indent
 import itertools
-
-from contracts import contract
-from contracts.utils import raise_desc
-
 from mcdp import logger
 from mcdp.exceptions import DPInternalError
 from mcdp_library import MCDPLibrary
 from mcdp_report.gg_utils import embed_images_from_library2
 from mcdp_utils_xml import to_html_stripping_fragment, bs, describe_tag
 
+from contracts import contract
+
 from .check_missing_links import check_if_any_href_is_invalid, fix_subfig_references
 from .elements_abbrevs import other_abbrevs
+from .github_file_ref.display_file_imp import display_files
+from .github_file_ref.substitute_github_refs_i import substitute_github_refs
 from .lessc import run_lessc
 from .macros import replace_macros
 from .make_console_pre import mark_console_pres
 from .make_figures import make_figure_from_figureid_attr
 from .prerender_math import escape_for_mathjax_back, escape_for_mathjax
+from .videos import make_videos
+from getpass import getuser
+from mcdp_docs.syntax_highlight import syntax_highlighting, strip_pre
 
 
 __all__ = [
@@ -25,8 +29,8 @@ __all__ = [
 
 @contract(returns='str', s=str, library=MCDPLibrary, raise_errors=bool)
 def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
-                    check_refs=False, do_math=True, filter_soup=None,
-                    raise_missing_image_errors = False):
+                    check_refs=False, use_mathjax=True, filter_soup=None,
+                    symbols=None):
     """
         Transforms markdown into html and then renders the mcdp snippets inside.
         
@@ -36,6 +40,8 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
         
         filter_soup(library, soup)
     """
+    raise_missing_image_errors = raise_errors
+    raise_missing_image_errors = False
     from .latex.latex_preprocess import extract_maths, extract_tabular
     from .latex.latex_preprocess import latex_preprocessing
     from .latex.latex_preprocess import replace_equations
@@ -48,7 +54,6 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
         msg = 'I expect a str encoded with utf-8, not unicode.'
         raise_desc(TypeError, msg, s=s)
 
-    
     # need to do this before do_preliminary_checks_and_fixes 
     # because of & char
     s, tabulars = extract_tabular(s)
@@ -73,16 +78,13 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
                 logger.error(msg)
                 raise ValueError(msg)
     
-    # fixes for LaTeX
     s = latex_preprocessing(s) 
-    
     s = '<div style="display:none">Because of mathjax bug</div>\n\n\n' + s
 
     # cannot parse html before markdown, because md will take
     # invalid html, (in particular '$   ciao <ciao>' and make it work)
     
     s = s.replace('*}', '\*}') 
-    
     
     s, mcdpenvs = protect_my_envs(s) 
 #     print('mcdpenvs = %s' % maths)
@@ -123,8 +125,8 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     
     s = to_html_stripping_fragment(soup)
     
-    if do_math:
-        s = prerender_mathjax(s)
+    if use_mathjax:
+        s = prerender_mathjax(s, symbols)
 
     soup = bs(s)
     escape_for_mathjax_back(soup)
@@ -146,6 +148,17 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     
     soup = bs(s)
     mark_console_pres(soup)
+    
+    try:
+        substitute_github_refs(soup, defaults={})
+    except Exception as e:
+        msg = 'I got an error while substituting github: references.'
+        msg += '\nI will ignore this error because it might not be the fault of the writer.'
+        msg += '\n\n'+indent(str(e), '|', ' error: |')
+        logger.warn(msg)
+    # must be before make_figure_from_figureid_attr()
+    display_files(soup, defaults={})
+    
     make_figure_from_figureid_attr(soup)
     col_macros(soup)
     fix_subfig_references(soup)  
@@ -160,15 +173,22 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     
     embed_images_from_library2(soup=soup, library=library, 
                               raise_errors=raise_missing_image_errors)
-        
+    make_videos(soup=soup)
+    
     if check_refs:    
         check_if_any_href_is_invalid(soup)
-            
-    run_lessc(soup)
+        
+    if getuser() == 'andrea':
+        run_lessc(soup)
     fix_validation_problems(soup)
+    
+    strip_pre(soup)
+    syntax_highlighting(soup)
     
     s = to_html_stripping_fragment(soup)
     s = replace_macros(s)    
+    
+    
     return s
 
 def get_document_properties(soup):

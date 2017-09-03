@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
+from compmake.utils.friendly_path_imp import friendly_path
+from contracts.utils import raise_wrapped
 import logging
+from mcdp import logger
+from mcdp.constants import MCDPConstants
+from mcdp.exceptions import DPSyntaxError
+from mcdp_docs.check_bad_input_files import check_bad_input_file_presence
+from mcdp_library import MCDPLibrary
+from mcdp_library.stdlib import get_test_librarian
+from mcdp_utils_misc import expand_all, locate_files, get_md5
 import os
 import tempfile
-import time
 
-from compmake.context import Context
-from compmake.jobs.actions import mark_to_remake
-from compmake.jobs.storage import get_job_cache
-from compmake.structures import Promise
 from contracts import contract
-from contracts.utils import check_isinstance
-from mcdp import MCDPConstants, logger
-from mcdp_library.library import MCDPLibrary
-from mcdp_library.stdlib import get_test_librarian
-from mcdp_utils_misc import locate_files
-from mcdp_utils_misc.string_utils import get_md5
 from quickapp import QuickApp
 from reprep.utils import natsorted
 
@@ -22,15 +21,22 @@ from .github_edit_links import add_edit_links
 from .manual_constants import MCDPManualConstants
 from .manual_join_imp import manual_join
 from .minimal_doc import get_minimal_document
+from .read_bibtex import run_bibtex2html
 
 
 class RenderManual(QuickApp):
     """ Renders the PyMCDP manual """
 
     def define_options(self, params):
-        params.add_string('src', help='Root directory with all contents')
+        params.add_string('src', help="""
+        Directories with all contents; separate multiple entries with a colon.""")
+        
+        params.add_string('extra', default="")
+        
         params.add_string('output_file', help='Output file')
         params.add_string('stylesheet', help='Stylesheet', default=None)
+        params.add_int('mathjax', help='Use MathJax (requires node)', default=1)
+        params.add_string('symbols', help='.tex file for MathJax', default=None)
         params.add_flag('cache')
         params.add_flag('pdf', help='Generate PDF version of code and figures.')
         params.add_string('remove', help='Remove the items with the given selector (so it does not mess indexing)',
@@ -40,143 +46,207 @@ class RenderManual(QuickApp):
         logger.setLevel(logging.DEBUG)
 
         options = self.get_options()
-        src_dir = options.src
+        src = options.src
+        src_dirs = [_ for _ in src.split(":") if _ and _.strip()]
+        
+        html_dirs = [_ for _ in options.extra.split(":") if _ and _.strip()]
+        
+#         src_dirs = [expand_all(_) for _ in src_dirs]
+        
         out_dir = options.output
         generate_pdf = options.pdf
         output_file = options.output_file
         remove = options.remove
         stylesheet = options.stylesheet
+        symbols = options.symbols 
+        use_mathjax = True if options.mathjax else False
+        
+        logger.info('use mathjax: %s' % use_mathjax)
+        logger.info('use symbols: %s' % symbols)
+        
+        if symbols is not None:
+            symbols = open(symbols).read()
 
-        bibfile = os.path.join(src_dir, 'bibliography/bibliography.html')
+        bibfile = os.path.join(src_dirs[0], 'bibliography/bibliography.html')
 
         if out_dir is None:
             out_dir = os.path.join('out', 'mcdp_render_manual')
 
+        for s in src_dirs:
+            check_bad_input_file_presence(s)
+            
         manual_jobs(context, 
-                    src_dir=src_dir, 
+                    src_dirs=src_dirs,
+                    extra_dirs=html_dirs, 
                     output_file=output_file,
                     generate_pdf=generate_pdf,
+                    
                     bibfile=bibfile,
                     stylesheet=stylesheet,
                     remove=remove,
+                    use_mathjax=use_mathjax,
+                    symbols=symbols,
                     )
+
+
+
+@contract(src_dirs='seq(str)', returns='list(str)')
+def get_bib_files(src_dirs):
+    """ Looks for .bib files in the source dirs; returns list of filenames """
+    return look_for_files(src_dirs, "*.bib")
+
+@contract(src_dirs='seq(str)', returns='list(str)')
+def get_markdown_files(src_dirs):
+    """ Returns a list of filenames. """
+    return look_for_files(src_dirs, "*.md")
+
+def look_for_files(srcdirs, pattern):
+    """
+        Excludes files with "excludes" in the name.
+    """
+    results = []
+    for d0 in srcdirs:  
+        d = expand_all(d0)
+        if not os.path.exists(d):
+            msg = 'Expected directory %s' % d
+            raise Exception(msg)
+    
+        filenames = locate_files(d, pattern, 
+                                 followlinks=True,
+                                 include_directories=False,
+                                 include_files=True,
+                                 normalize=False)
         
-def get_manual_contents(srcdir):
-    root = os.getcwd()
-    directory = os.path.join(root, srcdir)
-    if not os.path.exists(directory):
-        msg = 'Expected directory %s' % directory
-        raise Exception(msg)
-    pattern = '*.md'
-    filenames = locate_files(directory, pattern, followlinks=True,
-                 include_directories=False,
-                 include_files=True,
-                 normalize=False)
-    ok = []
-    for fn in filenames:
-        fn = os.path.relpath(fn, root)
-        if 'exclude' in fn:
-            logger.info('Excluding file %r because of string "exclude" in it' % fn)
-            continue
-        ok.append(fn)
-    filenames = natsorted(ok)
-    for f in filenames:
-        docname, _extension = os.path.splitext(os.path.basename(f))
-        yield 'manual', docname
+        ok = []
+        for fn in filenames:
+            fn = os.path.realpath(fn)
+#             fn = os.path.relpath(fn, root)
+            if 'exclude' in fn:
+                logger.info('Excluding file %r because of string "exclude" in it' % fn)
+            else:
+                if fn in results:
+                    logger.debug('Reached the file %s twice' % fn)
+                    pass # 
+                else:
+                    ok.append(fn)
+        results.extend(natsorted(ok))
+    
+    logger.info('Found %d files in %s' % (len(results), srcdirs))
+    return results
 
+    
 
-def manual_jobs(context, src_dir, output_file, generate_pdf, bibfile, stylesheet, 
-                remove=None, filter_soup=None, extra_css=None):
-    manual_contents = list(get_manual_contents(src_dir))
+@contract(src_dirs='seq(str)')
+def manual_jobs(context, src_dirs, output_file, generate_pdf, bibfile, stylesheet,
+                use_mathjax, extra_dirs=[],
+                remove=None, filter_soup=None, extra_css=None, symbols=None):
+    """
+        src_dirs: list of sources
+        symbols: a TeX preamble (or None)
+    """
+    root_dir = src_dirs[0]
+    
+    filenames = get_markdown_files(src_dirs)
 
-    if not manual_contents:
+    if not filenames:
         msg = 'Could not find any file for composing the book.'
         raise Exception(msg)
 
-    # check that all the docnames are unique
-    pnames = [_[1] for _ in manual_contents]
-    if len(pnames) != len(set(pnames)):
-        msg = 'Repeated names detected: %s' % pnames
-        raise ValueError(msg)
-
-    local_files = list(locate_files(src_dir, '*.md'))
-    basename2filename = dict( (os.path.basename(_), _) for _ in local_files)
-
     files_contents = []
-    for i, (_, docname) in enumerate(manual_contents):
-        libname = 'unused'
-        logger.info('adding document %s - %s' % (libname, docname))
-        out_part_basename = '%02d%s' % (i, docname)
+    for i, filename in enumerate(filenames):
+        if is_ignored_by_catkin(filename):
+            logger.debug('Ignoring because of CATKIN_IGNORE: %s' % filename)
+            continue
+        logger.info('adding document %s ' % friendly_path(filename))
         
-        # read the file to get hash
-        basename = '%s.md' % docname
-        fn = basename2filename[basename]
-        contents = open(fn).read()
+        docname,_ = os.path.splitext(os.path.basename(filename))
+        
+        contents = open(filename).read()
         contents_hash = get_md5(contents)[:8] 
-        # job will be automatically erased if the source changes
-        job_id = '%s-%s' % (docname,contents_hash)
-        res = context.comp(render_book, src_dir, docname, generate_pdf,
-                           
+        # because of hash job will be automatically erased if the source changes
+        out_part_basename = '%03d-%s-%s' % (i, docname, contents_hash)
+        job_id = '%s-%s-%s' % (docname, get_md5(filename)[:8], contents_hash)
+        
+        # find the dir
+        for d in src_dirs:
+            if os.path.realpath(d) in filename:
+                break
+        else:
+            msg = 'Could not find dir for %s in %s' % (filename, src_dirs)
+            
+        res = context.comp(render_book, d, docname, generate_pdf,
+                           data=contents, realpath=filename,
+                           use_mathjax=use_mathjax,
+                           symbols=symbols,
                            main_file=output_file,
                            out_part_basename=out_part_basename,
-                           
                            filter_soup=filter_soup, 
                            extra_css=extra_css,
                            job_id=job_id)
-
-#         source = '%s.md' % docname
-#         if source in basename2filename:
-#             filenames = [basename2filename[source]]
-#             erase_job_if_files_updated(context.cc, promise=res,
-#                                        filenames=filenames)
-#         else:
-#             logger.debug('Could not find file %r for date check' % source)
-
+ 
         files_contents.append(res)
+    
+    bib_files = get_bib_files(src_dirs)
+    logger.debug('Found bib files:\n%s' % "\n".join(bib_files))
+    if bib_files:
+        bib_contents = job_bib_contents(context, bib_files)
+        entry  = ('unused', 'bibtex'), bib_contents 
+        files_contents.append(entry)
+    
+    template = get_main_template(root_dir)
+    
+    
+    references = OrderedDict()
+#     base_url = 'http://book.duckietown.org/master/duckiebook/pdoc'
+#     for extra_dir in extra_dirs:
+#         res = read_references(extra_dir, base_url, prefix='python:')
+#         references.update(res)
+        
+#     extra = look_for_files(extra_dirs, "*.html")
+#     
+#     for filename in extra:
+#         contents = open(filename).read()
+#         docname = os.path.basename(filename) + '_' + get_md5(filename)[:5]
+#         c = (('unused', docname), contents)
+#         files_contents.append(c)
+   
+    d = context.comp(manual_join, template=template, files_contents=files_contents, 
+                     stylesheet=stylesheet, remove=remove, references=references)
+    
+    context.comp(write, d, output_file)
 
-    fn = os.path.join(src_dir, MCDPManualConstants.main_template)
+    if os.path.exists(MCDPManualConstants.pdf_metadata_template):
+        context.comp(generate_metadata, root_dir)
+
+    
+
+def is_ignored_by_catkin(dn):
+    """ Returns true if the directory is inside one with CATKIN_IGNORE """
+    while dn != '/':
+        i = os.path.join(dn, "CATKIN_IGNORE")
+        if os.path.exists(i):
+            return True
+        dn = os.path.dirname(dn)
+    return False
+
+def job_bib_contents(context, bib_files):
+    bib_files = natsorted(bib_files)
+    # read all contents
+    contents = ""
+    for fn in bib_files:
+        contents += open(fn).read() + '\n\n'
+    h = get_md5(contents)[:8]
+    job_id = 'bibliography-' + h
+    return context.comp(run_bibtex2html, contents, job_id=job_id)
+
+def get_main_template(root_dir):
+    fn = os.path.join(root_dir, MCDPManualConstants.main_template)
     if not os.path.exists(fn):
         msg = 'Could not find template %s' % fn 
         raise ValueError(msg)
     
     template = open(fn).read()
-    
-
-    d = context.comp(manual_join, template=template, files_contents=files_contents, 
-                     bibfile=bibfile, stylesheet=stylesheet, remove=remove)
-    context.comp(write, d, output_file)
-
-    if os.path.exists(MCDPManualConstants.pdf_metadata_template):
-        context.comp(generate_metadata, src_dir)
-
-@contract(compmake_context=Context, promise=Promise, filenames='seq[>=1](str)')
-def erase_job_if_files_updated(compmake_context, promise, filenames):
-    """ Invalidates the job if the filename is newer """
-    check_isinstance(promise, Promise)
-    check_isinstance(filenames, (list, tuple))
-
-    def friendly_age(ts):
-        age = time.time() - ts
-        return '%.3fs ago' % age
-
-    filenames = list(filenames)
-    for _ in filenames:
-        if not os.path.exists(_):
-            msg = 'File does not exist: %s' % _
-            raise ValueError(msg)
-    last_update = max(os.path.getmtime(_) for _ in filenames)
-    db = compmake_context.get_compmake_db()
-    job_id = promise.job_id
-    cache = get_job_cache(job_id, db)
-    if cache.state == cache.DONE:
-        done_at = cache.timestamp
-        if done_at < last_update:
-            show_filenames = filenames if len(filenames) < 3 else '(too long to show)' 
-            logger.info('Cleaning job %r because files updated %s' % (job_id, show_filenames))
-            logger.info('  files last updated: %s' % friendly_age(last_update))
-            logger.info('       job last done: %s' % friendly_age(done_at))
-
-            mark_to_remake(job_id, db)
+    return template
 
 def generate_metadata(src_dir):
     template = MCDPManualConstants.pdf_metadata_template
@@ -205,44 +275,47 @@ def write(s, out):
     print('Written %s ' % out)
 
 
-def render_book(src_dir, docname, generate_pdf, main_file, out_part_basename, filter_soup=None,
-                extra_css=None):
+def render_book(src_dir, docname, generate_pdf, 
+                data, realpath,
+                main_file, use_mathjax, out_part_basename, filter_soup=None,
+                extra_css=None, symbols=None):
     from mcdp_docs.pipeline import render_complete
 
     librarian = get_test_librarian()
-    librarian.find_libraries('.')
+    # XXX: these might need to be changed
+    if not MCDPConstants.softy_mode:
+        librarian.find_libraries('.')
+    
         
     load_library_hooks = [librarian.load_library]
     library = MCDPLibrary(load_library_hooks=load_library_hooks)
-    library.add_search_dir(src_dir)
-# 
-#     data = dict(path=dirname, library=l)
-#     l.library_name = library_name
-#     
-#     library = librarian.load_library(libname)
-#     
-#     l = library.load_library(libname)
+    library.add_search_dir(src_dir) 
     
     d = tempfile.mkdtemp()
     library.use_cache_dir(d)
 
-    basename = docname + '.' + MCDPConstants.ext_doc_md
-    f = library._get_file_data(basename)
-    data = f['data']
-    realpath = f['realpath']
-
+#     basename = docname + '.' + MCDPConstants.ext_doc_md
+#     f = library._get_file_data(basename)
+#     data = f['data']
+#     realpath = f['realpath']
 
     def filter_soup0(soup, library):
         if filter_soup is not None:
             filter_soup(soup=soup, library=library)
         add_edit_links(soup, realpath)
         
-    html_contents = render_complete(library=library,
+    try:
+        html_contents = render_complete(library=library,
                                     s=data, 
                                     raise_errors=True, 
                                     realpath=realpath,
+                                    use_mathjax=use_mathjax,
+                                    symbols=symbols,
                                     generate_pdf=generate_pdf,
                                     filter_soup=filter_soup0)
+    except DPSyntaxError as e:
+        msg = 'Could not compile %s' % realpath
+        raise_wrapped(DPSyntaxError, e, msg, compact=True)
 
     doc = get_minimal_document(html_contents,
                                add_markdown_css=True, extra_css=extra_css)
@@ -256,7 +329,7 @@ def render_book(src_dir, docname, generate_pdf, main_file, out_part_basename, fi
     with open(fn, 'w') as f:
         f.write(doc)
 
-    return (('unused', docname), html_contents)
+    return (('unused', out_part_basename), html_contents)
 
     
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from comptests.registrar import run_module_tests, comptest
-from mcdp_docs.manual_join_imp import manual_join
+from mcdp_docs.manual_join_imp import manual_join, split_in_files
 from mcdp_docs.pipeline import render_complete
 from mcdp_docs.toc_number import number_styles, render_number
 from mcdp_docs.tocs import generate_toc
@@ -34,22 +34,96 @@ def test_toc():
 </html>
     """
     soup = bs(s)
-    print(soup)
+#     print(soup)
 #     body = soup.find('body')
     _toc = generate_toc(soup)
     s = str(soup)
     expected = ['sec:one', 'sub:two']
-    print(indent(s, 'transformed > '))
+#     print(indent(s, 'transformed > '))
     for e in expected:
         assert e in s
 
+
+@comptest
+def test_toc_first():
+    s = """
+<p>Before everything</p>
+<h1 id='booktitle' nonumber="1" notoc="1">Booktitle</h1>
+
+<p>A figure</p>
+
+<h1 id='mtoc' nonumber="1" notoc="1">toc</h1>
+
+<p> This is my toc </p>
+
+ 
+<h1 id='part:part1'>Part1</h1>
+
+<p>a</p>
+
+<h1 id='one'>One</h1>
+
+<p>a</p>
+ 
+    """ 
+    
+    files_contents = [(('a','b'), s)]
+    stylesheet = 'v_manual_blurb_ready'
+    res = manual_join(template=template, files_contents=files_contents, bibfile=None, stylesheet=stylesheet)
+
+    soup = bs(res)
+    
+#     print(indent(soup.prettify(), 't > '))
+#     body = soup.find('body')
+    filename2contents = split_in_files(soup)
+    print list(filename2contents.keys())
+    index = filename2contents['index.html']
+    
+    print indent(index, 'index > ')
+    s = str(index)
+    assert 'Before everything' in s
+    
+@comptest
+def test_toc2():
+    s = """
+<html>
+<head></head>
+<body>
+<h1>One</h1>
+<h1>Two</h1>
+<h1>Three</h1>
+<p></p>
+
+<h2>A</h2>
+
+<h2>B</h2>
+
+<h2>C</h2>
+
+<h3>a</h3>
+<h3>b</h3>
+<h3>c</h3>
+
+</body>
+</html>
+    """
+    soup = bs(s)
+#     print(soup)
+#     body = soup.find('body')
+    _toc = generate_toc(soup)
+    s = str(soup)
+#     expected = ['sec:one', 'sub:two']
+#     print(indent(s, 'transformed > '))
+#     for e in expected:
+#         assert e in s
+        
 @comptest
 def test_render_number():
     styles = sorted(number_styles)
     numbers = range(0, 55)
     for s in styles:
         r = [render_number(_, s) for _ in numbers]
-        print('%s: %s' % (s, r))
+#         print('%s: %s' % (s, r))
     
 @comptest
 def test_toc_numbers1():
@@ -173,20 +247,20 @@ Citing only number:
     realpath = __name__
     s = render_complete(library, s, raise_errors, realpath)
     
-    template = """<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        </head><body></body></html>
-        """
+    
     files_contents = [(('a','b'), s)]
     stylesheet = 'v_manual_blurb_ready'
     res = manual_join(template=template, files_contents=files_contents, bibfile=None, stylesheet=stylesheet)
 
-#     print res
-    fn = 'test_toc_numbers1.html'
+    fn = 'out/comptests/test_toc_numbers1.html' # XXX: write on test folder
     logger.info('written on %s' % fn)
     with open(fn, 'w') as f:
         f.write(res) 
 
 
-
+template = """<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        </head><body></body></html>
+        """
+        
 if __name__ == '__main__':
     run_module_tests()

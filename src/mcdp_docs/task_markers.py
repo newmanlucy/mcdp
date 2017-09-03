@@ -1,6 +1,8 @@
 from bs4.element import NavigableString
-from mcdp_utils_xml.add_class_and_style import add_class
+
 from mcdp import logger
+from mcdp_utils_xml import add_class
+
 
 def substitute_task_markers(soup):
     subs2class = {
@@ -8,6 +10,7 @@ def substitute_task_markers(soup):
         '(DONE)': 'status-done',
         '(IN PROGRESS)': 'status-inprogress',
         'XXX': 'status-XXX',
+        '???': 'status-XXX',
     } 
     
     for sub, klass in subs2class.items():
@@ -19,18 +22,18 @@ def substitute_task_marker(soup, sub, klass):
         substitute_task_marker_p(p, sub, klass)
 
 def substitute_task_marker_p(p, sub, klass):
-    try:
-        for element in p.descendants:
+#     try:
+        for element in list(p.descendants): # use list() otherwise modifying 
             if not isinstance(element, NavigableString):
                 continue
     
             s = element.string
             if sub in s:
                 add_class(p, klass)
-                s2 = s.replace(sub, '')
-                ns = NavigableString(s2)
-                element.replaceWith(ns)
-    except AttributeError as e: # a bug with bs4
-        msg = 'Bug with descendants: %s' % e
-        logger.debug(msg)
-        pass
+#                 s2 = s.replace(sub, '')
+#                 ns = NavigableString(s2)
+#                 element.replaceWith(ns)
+#     except AttributeError as e: # a bug with bs4
+#         msg = 'Bug with descendants: %s' % e
+#         logger.debug(msg)
+#         pass

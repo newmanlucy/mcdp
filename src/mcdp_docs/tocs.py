@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from collections import namedtuple
-
-from bs4.element import Comment, Tag, NavigableString
-
-from contracts.utils import indent
 from mcdp.logs import logger
 from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.toc_number import render_number, number_styles
-from mcdp_utils_xml import add_class, note_error_msg, bs
+from mcdp_utils_xml import add_class, bs
+from mcdp_utils_xml.note_errors_inline import note_error2
+
+from bs4.element import Comment, Tag, NavigableString
+from contracts.utils import indent
 
 
 figure_prefixes = ['fig', 'tab', 'subfig', 'code']
@@ -146,23 +146,24 @@ def generate_toc(soup, max_depth=None):
 
     logger.debug('numbering items')
     number_items2(root)
-    logger.debug(toc_summary(root))
-
-    logger.debug('toc iterating')
-    # iterate over chapters (below each h1)
-    # XXX: this is parts
     if False:
-        for item in root.items:
-            s = item.to_html(root=True, max_levels=100)
-            stoc = bs(s)
-            if stoc.ul is not None:  # empty document case
-                ul = stoc.ul
-                ul.extract()
-                ul['class'] = 'toc chapter_toc'
-                # todo: add specific h1
-                item.tag.insert_after(ul)  # XXX: uses <fragment>
-
-    logger.debug('toc done iterating')
+        logger.debug(toc_summary(root))
+# 
+#     logger.debug('toc iterating')
+#     # iterate over chapters (below each h1)
+#     # XXX: this is parts
+#     if False:
+#         for item in root.items:
+#             s = item.to_html(root=True, max_levels=100)
+#             stoc = bs(s)
+#             if stoc.ul is not None:  # empty document case
+#                 ul = stoc.ul
+#                 ul.extract()
+#                 ul['class'] = 'toc chapter_toc'
+#                 # todo: add specific h1
+#                 item.tag.insert_after(ul)  # XXX: uses <fragment>
+# 
+#     logger.debug('toc done iterating')
     exclude = ['subsub', 'fig', 'code', 'tab', 'par', 'subfig',
                 'appsubsub',
                         'def', 'eq', 'rem', 'lem', 'prob', 'prop', 'exa', 'thm' ]
@@ -220,14 +221,15 @@ class Item(object):
                   (self.depth, self.header_level, self.id))
 
         if max_levels and self.items:
-            s += '<ul class="toc_ul-depth-%s toc_li_for_%s">' % (
+            s += '<ul class="toc_ul-depth-%s toc_ul_for_%s">' % (
                 self.depth, self.header_level)
             for item in self.items:
                 sitem = item.to_html(root=False, max_levels=max_levels - 1)
                 sitem = indent(sitem, '  ')
-                s += ('\n  <li class="toc_li-depth-%s toc_ul_for_%s">\n%s\n  </li>' %
+                s += ('\n  <li class="toc_li-depth-%s toc_li_for_%s">\n%s\n  </li>' %
                       (self.depth, self.header_level, sitem))
             s += '\n</ul>'
+
         return s
 
     def depth_first_descendants(self):
@@ -236,12 +238,12 @@ class Item(object):
             for item2 in item.depth_first_descendants():
                 yield item2
 
+Label = namedtuple('Label', 'what number label_self')
 
-def number_items2(root):
-    counters = set(['part', 'app', 'sec', 'sub', 'subsub', 'appsub', 'appsubsub', 'par']
-                   + ['fig', 'tab', 'subfig', 'code']
-                   + ['exa', 'rem', 'lem', 'def', 'prop', 'prob', 'thm'])
+Style = namedtuple('Style', 'resets labels')
 
+def get_style_book():
+    
     resets = {
         'part': [],
         'sec': ['sub', 'subsub', 'par'],
@@ -263,7 +265,7 @@ def number_items2(root):
         'prob': [],
         'thm': [],
     }
-    Label = namedtuple('Label', 'what number label_self')
+    
     labels = {
         'part': Label('Part', '${part}', ''),
         'sec': Label('Chapter', '${sec}', ''),
@@ -287,7 +289,68 @@ def number_items2(root):
         'exa': Label('Example', '${exa}', ''),
 
     }
+    return Style(resets, labels)
 
+def get_style_duckietown():
+    resets = {
+        'part': ['sec'],
+        'sec': ['sub', 'subsub', 'par', 'fig', 'tab'],
+        'sub': ['subsub', 'par'],
+        'subsub': ['par'],
+        'app': ['appsub', 'appsubsub', 'par'],
+        'appsub': ['appsubsub', 'par'],
+        'appsubsub': ['par'],
+        'par': [],
+        'fig': ['subfig'],
+        'subfig': [],
+        'tab': [],
+        'code': [],
+        'exa': [],
+        'rem': [],
+        'lem': [],
+        'def': [],
+        'prop': [],
+        'prob': [],
+        'thm': [],
+    }
+    
+
+    labels = {
+        'part': Label('Part', '${part|upper-alpha}', ''),
+        'sec': Label('Unit', '${part|upper-alpha}-${sec}', ''),
+        'sub': Label('Section', '${sec}.${sub}', ''),
+        'subsub': Label('Subsection', '${sec}.${sub}.${subsub}', '${subsub}) '),
+        'par': Label('Paragraph', '${par|lower-alpha}', ''),
+        'app': Label('Appendix', '${app|upper-alpha}', ''),
+        'appsub': Label('Section', '${app|upper-alpha}.${appsub}', ''),
+        'appsubsub': Label('Subsection', '${app|upper-alpha}.${appsub}.${appsubsub}', ''),
+        # global counters
+        'fig': Label('Figure', '${sec}.${fig}', ''),
+        'subfig': Label('Figure', '${sec}.${fig}${subfig|lower-alpha}', '(${subfig|lower-alpha})'),
+        'tab': Label('Table', '${sec}.${tab}', ''),
+        'code': Label('Listing', '${sec}.${code}', ''),
+        'rem': Label('Remark', '${rem}', ''),
+        'lem': Label('Lemma', '${lem}', ''),
+        'def': Label('Definition', '${def}', ''),
+        'prob': Label('Problem', '${prob}', ''),
+        'prop': Label('Proposition', '${prop}', ''),
+        'thm': Label('Theorem', '${thm}', ''),
+        'exa': Label('Example', '${exa}', ''),
+
+    }
+    
+    return Style(resets, labels)
+
+def number_items2(root):
+    counters = set(['part', 'app', 'sec', 'sub', 'subsub', 'appsub', 'appsubsub', 'par']
+                   + ['fig', 'tab', 'subfig', 'code']
+                   + ['exa', 'rem', 'lem', 'def', 'prop', 'prob', 'thm'])
+    
+    style = get_style_book()
+    style = get_style_duckietown()
+    resets = style.resets
+    labels = style.labels
+    
     for c in counters:
         assert c in resets, c
         assert c in labels, c
@@ -364,104 +427,147 @@ def render(s, counter_state):
 
 def substituting_empty_links(soup, raise_errors=False):
     '''
-
+    
+    
+        default style is [](#sec:systems)  "Chapter 10"
+ 
+    
+        You can also use "class":
+        
+            <a href='#sec:name' class='only_number'></a>
+    
 
     '''
+    CLASS_ONLY_NUMBER = MCDPManualConstants.CLASS_ONLY_NUMBER
+    CLASS_NUMBER_NAME = MCDPManualConstants.CLASS_NUMBER_NAME
+    CLASS_ONLY_NAME = MCDPManualConstants.CLASS_ONLY_NAME
+
     logger.debug('substituting_empty_links')
+    
     n = 0
     nerrors = 0
-    for a, element_id, element in get_empty_links_to_fragment(soup):
+    for le in get_empty_links_to_fragment(soup):
+
+        
+        a = le.linker
+        element_id = le.eid
+        element = le.linked
+        
         n += 1
-        if element:
-            if (not LABEL_WHAT_NUMBER  in element.attrs) or \
-                    (not LABEL_NAME in element.attrs):
-                msg = ('substituting_empty_links: Could not find attributes %s or %s in %s' %
-                       (LABEL_NAME, LABEL_WHAT_NUMBER, element))
-                if True:
-                    logger.warning(msg)
-                else:
-                    note_error_msg(a, msg)
-                    nerrors += 1
-                    if raise_errors:
-                        raise ValueError(msg)
-            else:
-                label_what_number = element.attrs[LABEL_WHAT_NUMBER]
-                label_number = element.attrs[LABEL_NUMBER]
-                label_what = element.attrs[LABEL_WHAT]
-                label_name = element.attrs[LABEL_NAME]
-                classes = a.attrs.get('class', [])
-                if 'toc_link' in classes:
-                    s = Tag(name='span')
-                    s.string = label_what
-                    add_class(s, 'toc_what')
-                    a.append(s)
-
-                    a.append(' ')
-
-                    s = Tag(name='span')
-                    s.string = label_number
-                    add_class(s, 'toc_number')
-                    a.append(s)
-
-                    s = Tag(name='span')
-                    s.string = ' - '
-                    add_class(s, 'toc_sep')
-                    a.append(s)
-
-                    if label_name is not None and '<' in label_name:
-                        contents = bs(label_name)
-                        # sanitize the label name
-                        for br in contents.findAll('br'):
-                            br.replaceWith(NavigableString(' '))
-                        for _ in contents.findAll('a'):
-                            _.extract()
-                        
-                        a.append(contents)
-                        #logger.debug('From label_name = %r to a = %r' % (label_name, a))
-                    else:
-                        s = Tag(name='span')
-                        if label_name is None:
-                            s.string = '(unnamed)'  # XXX
-                        else:
-                            s.string = label_name
-                        add_class(s, 'toc_name')
-                        a.append(s)
-
-                else:
-                    if MCDPManualConstants.CLASS_ONLY_NUMBER in classes:
-                        label = label_number
-                    elif MCDPManualConstants.CLASS_NUMBER_NAME in classes:
-                        if label_name is None:
-                            label = label_what_number + \
-                                ' - ' + '(unnamed)'  # warning
-                        else:
-                            label = label_what_number + ' - ' + label_name
-                    elif MCDPManualConstants.CLASS_ONLY_NAME in classes:
-                        if label_name is None:
-                            label = '(unnamed)'  # warning
-                        else:
-                            label = label_name
-                    else:
-                        label = label_what_number
-
-                    span1 = Tag(name='span')
-                    add_class(span1, 'reflabel')
-                    span1.string = label
-                    a.append(span1)
-
-        else:
+        if not element:
             msg = ('Cannot find %s' % element_id)
-            note_error_msg(a, msg)
+            note_error2(a, 'Ref. error', 'substituting_empty_links():\n'+msg)
             nerrors += 1
             if raise_errors:
                 raise ValueError(msg)
+            continue
+        # if there is a query, remove it
+        if le.query is not None:
+            new_href = '#' + le.eid
+            a.attrs['href'] = new_href
+            logger.info('setting new href= %s' % (new_href))
+            
+        if (not LABEL_WHAT_NUMBER in element.attrs) or \
+                (not LABEL_NAME in element.attrs):
+            msg = ('substituting_empty_links: Could not find attributes %s or %s in %s' %
+                   (LABEL_NAME, LABEL_WHAT_NUMBER, element))
+            if True:
+                logger.warning(msg)
+            else:
+#                 note_error_msg(a, msg)
+                note_error2(a, 'Ref. error', 'substituting_empty_links():\n'+msg)
+                nerrors += 1
+                if raise_errors:
+                    raise ValueError(msg)
+            continue
+        
+        label_what_number = element.attrs[LABEL_WHAT_NUMBER]
+        label_number = element.attrs[LABEL_NUMBER]
+        label_what = element.attrs[LABEL_WHAT]
+        label_name = element.attrs[LABEL_NAME]
+        
+        classes = list(a.attrs.get('class', [])) # bug: I was modifying
+        
+        if le.query is not None:
+            classes.append(le.query)
+        
+        if 'toc_link' in classes:
+            s = Tag(name='span')
+            s.string = label_what
+            add_class(s, 'toc_what')
+            a.append(s)
+
+            a.append(' ')
+
+            s = Tag(name='span')
+            s.string = label_number
+            add_class(s, 'toc_number')
+            a.append(s)
+
+            s = Tag(name='span')
+            s.string = ' - '
+            add_class(s, 'toc_sep')
+            a.append(s)
+
+            if label_name is not None and '<' in label_name:
+                contents = bs(label_name)
+                # sanitize the label name
+                for br in contents.findAll('br'):
+                    br.replaceWith(NavigableString(' '))
+                for _ in contents.findAll('a'):
+                    _.extract()
+                
+                contents.name = 'span'
+                add_class(contents, 'toc_name')
+                a.append(contents)
+                #logger.debug('From label_name = %r to a = %r' % (label_name, a))
+            else:
+                if label_name is None:
+                    s = Tag(name='span')
+                    s.string = '(unnamed)'  # XXX
+                else:
+                    s = bs(label_name)
+                    assert s.name == 'fragment'
+                    s.name = 'span'
+                    #add_class(s, 'produced-here') # XXX
+                add_class(s, 'toc_name')
+                a.append(s)
+
+        else:
+             
+            if CLASS_ONLY_NUMBER in classes:
+                label = label_number
+            elif CLASS_NUMBER_NAME in classes:
+                if label_name is None:
+                    label = label_what_number + \
+                        ' - ' + '(unnamed)'  # warning
+                else:
+                    label = label_what_number + ' - ' + label_name
+            elif CLASS_ONLY_NAME in classes:
+                if label_name is None:
+                    label = '(unnamed)'  # warning
+                else:
+                    label = label_name
+            else:
+                label = label_what_number
+
+            frag = bs(label)
+            assert frag.name == 'fragment'
+            frag.name = 'span'
+            add_class(frag, 'reflabel')
+            a.append(frag)
+#             span1.attrs['comment'] = str(le)
+       
     logger.debug('substituting_empty_links: %d total, %d errors' %
                  (n, nerrors))
 
 
+LinkElement = namedtuple('LinkElement', 'linker eid linked query')
+
 def get_empty_links_to_fragment(soup):
     """
         Find all links that have a reference to a fragment.
+        yield LinkElement
     """
 #
 # s.findAll(lambda tag: tag.name == 'p' and tag.find(True) is None and
@@ -470,7 +576,7 @@ def get_empty_links_to_fragment(soup):
     logger.debug('building index')
     # first find all elements by id
     id2element = {}
-    for x in soup.descendants:
+    for x in list(soup.descendants):
         if isinstance(x, Tag) and 'id' in x.attrs:
             id2element[x.attrs['id']] = x
 
@@ -478,13 +584,26 @@ def get_empty_links_to_fragment(soup):
 
     for element in soup.find_all('a'):
         empty = len(list(element.descendants)) == 0
+        
+#         logger.debug('get_empty_links_to_fragment link: %s %s' % (element, empty))
+        
         if not empty:
-            continue
-
+            continue 
+        
         if not 'href' in element.attrs:
             continue
+        
         href = element.attrs['href']
         if href.startswith('#'):
-            eid = href[1:]
+            rest = href[1:]
+            if '/' in rest:
+                i = rest.index('/')
+                eid = rest[:i]
+                query = rest[i+1:]
+            else:
+                eid = rest
+                query = None
+
             linked = id2element.get(eid, None)
-            yield element, eid, linked
+            yield LinkElement(linker=element, eid=eid, linked=linked, query=query)
+

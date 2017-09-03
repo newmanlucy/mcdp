@@ -79,7 +79,7 @@ def add_other_fields(self, res, request, context):
         return _ in e.user_info.subscriptions
     
     res['shelf_can_read'] = can_read
-    res['shelf_can_write'] = can_write
+    res['shelf_can_write'] = can_write 
     res['shelf_can_subscribe'] = can_subscribe
     res['shelf_can_discover'] = can_discover
     res['shelf_can_admin'] = can_admin
@@ -223,8 +223,12 @@ def add_std_vars_context_(f, redir):
             url = request.url
             p = urlparse.urlparse(url)
             url2 = url
-            if '127.0.0.1' in p.netloc:
-                url2 = url2.replace('127.0.0.1', 'localhost')
+            # only do redirection if we have url_base_internal
+            # The redirection is needed because of https; however
+            # for casual use it is likely https is not set up.
+            if self.options.url_base_internal:
+                if '127.0.0.1' in p.netloc:
+                    url2 = url2.replace('127.0.0.1', 'localhost')
             if not p.path.endswith('.html'):
                 if not p.path.endswith('/'):
                     url2 = url2.replace(p.path, p.path + '/')

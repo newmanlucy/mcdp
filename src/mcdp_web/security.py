@@ -34,7 +34,17 @@ class AppLogin(object):
         logger.error('forbidden result: %s' % request.exception.result)
         request.response.status = 403
         config = self.get_authomatic_config()
-        config['next_location'] = request.url
+        
+        # Bug! this must be front-facing
+        url_internal = request.url
+        if self.options.url_base_internal is not None:
+            url_external = url_internal.replace(self.options.url_base_internal, self.options.url_base_public) 
+        else:
+            url_external = url_internal
+        
+        logger.debug('next_location:\n internal: %s\n external: %s' % (url_internal, url_external))
+        config['next_location'] = url_external
+        
         res = {}
         res['request_exception_message'] = request.exception.message
         res['request_exception_result'] = request.exception.result
@@ -90,7 +100,6 @@ class AppLogin(object):
             login = e.request.params['login'].encode('utf8')
             password = e.request.params['password'].encode('utf8')
 
-            
             if not login in user_db:
                 error = 'Could not find user name "%s".' % login
             else:
@@ -102,7 +111,6 @@ class AppLogin(object):
                     error = 'Password does not match.'
         else: 
             login = None
-             
 
         res = dict(
             name='Login',

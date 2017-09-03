@@ -136,6 +136,7 @@ class SyntaxIdentifiers(object):
         'poset',
         'add_bottom',
         'implements',
+        'and',
     ]
 
     # remember to .copy() this otherwise things don't work

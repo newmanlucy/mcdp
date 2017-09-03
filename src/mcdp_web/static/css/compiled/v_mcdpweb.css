@@ -151,6 +151,12 @@ h2.draft,
 h3.draft {
   color: red !important;
 }
+span.placeholder {
+  padding-left: 1px;
+  padding-right: 1px;
+  color: white;
+  background-color: blue;
+}
 span.Unit,
 span.Nat,
 span.Int,
@@ -509,7 +515,7 @@ pre code {
 .tip {
   border-radius: 5px;
   padding: 5px;
-  background: #73AD21;
+  background: #73ad21;
   color: white;
   max-width: 20em;
 }

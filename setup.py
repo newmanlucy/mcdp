@@ -1,5 +1,3 @@
-import os
-
 from setuptools import find_packages, setup
 
 
@@ -24,7 +22,7 @@ name = 'PyMCDP'
 setup(name=name,
       url='http://github.com/AndreaCensi/mcdp',
       maintainer="Andrea Censi",
-      maintainer_email="censi@mit.edu",
+      maintainer_email="acensi@idsc.mavt.ethz.ch",
       description='PyMCDP is an interpreter and solver for Monotone Co-Design Problems',
       long_description='',
       #package_data={'':['*.*', '*.mcdp*', '*.js', '*.png', '*.css']},
@@ -49,8 +47,10 @@ setup(name=name,
         # 'reprep',
         'pint',
         'watchdog',
+        'decorator>=4.1.0',
         'networkx',
-        'pyramid',
+        'pygments',
+          'pyramid',
         'pyramid_jinja2',
         #'pyramid_chameleon',
         'pyramid_debugtoolbar',
@@ -63,8 +63,8 @@ setup(name=name,
         'DecentLogs',
         'QuickApp>=1.2',
         'compmake',
-          'psutil',
-          'setproctitle',
+        'psutil',
+        'setproctitle',
         'markdown',
         'bcrypt',
         'waitress',
@@ -74,9 +74,11 @@ setup(name=name,
         'authomatic',
         'webtest',
         'ruamel.yaml',
-	'chardet',
-	'pillow',
-
+        'python-dateutil',
+        'chardet',
+        'pillow',
+        'ruamel.yaml',
+        'pygments_markdown_lexer',
       ],
       # This avoids creating the egg file, which is a zip file, which makes our data
       # inaccessible by dir_from_package_name()
@@ -84,7 +86,7 @@ setup(name=name,
       dependency_links  = [
           # 'https://github.com/AndreaCensi/contracts/archive/env_mcdp.zip#egg=PyContracts',
           # 'https://github.com/AndreaCensi/conf_tools/archive/env_fault.zip#egg=ConfTools',
-          #'https://github.com/AndreaCensi/quickapp/archive/env_fault.zip#egg=QuickApp',
+          # 'https://github.com/AndreaCensi/quickapp/archive/env_fault.zip#egg=QuickApp',
           # 'git+https://github.com/AndreaCensi/quickapp.git@env_mcdp#egg=QuickApp',
           # 'https://github.com/AndreaCensi/reprep/archive/env_mcdp.zip#egg=RepRep',
           # 'https://github.com/AndreaCensi/gvgen/archive/master.zip#egg=gvgen-0.9.1',
@@ -107,6 +109,7 @@ setup(name=name,
             'mcdp-render-manual = mcdp_docs:mcdp_render_manual_main',
             'mcdp-depgraph = mcdp_depgraph:mcdp_depgraph_main',
             'mcdp-load-all = mcdp_hdb_mcdp:mcdp_load_all_main',
+            'mcdp-split = mcdp_docs.split:split_main',
         ]
       }
 )
