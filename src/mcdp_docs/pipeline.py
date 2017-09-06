@@ -188,7 +188,6 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     s = to_html_stripping_fragment(soup)
     s = replace_macros(s)    
     
-    
     return s
 
 def get_document_properties(soup):
