@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 import logging
 import os
 import tempfile
-import time
 
-import git
 from quickapp import QuickApp
 from reprep.utils import natsorted
 
@@ -15,12 +13,11 @@ from contracts.utils import raise_wrapped
 from mcdp import logger
 from mcdp.constants import MCDPConstants
 from mcdp.exceptions import DPSyntaxError
-from mcdp_docs.github_edit_links import get_repo_root
 from mcdp_docs.manual_join_imp import DocToJoin
+from mcdp_docs.source_info_imp import get_source_info, make_last_modified
 from mcdp_library import MCDPLibrary
 from mcdp_library.stdlib import get_test_librarian
 from mcdp_utils_misc import expand_all, locate_files, get_md5
-from mcdp_utils_misc.memoize_simple_imp import memoize_simple
 
 from .check_bad_input_files import check_bad_input_file_presence
 from .github_edit_links import add_edit_links
@@ -136,27 +133,6 @@ def look_for_files(srcdirs, pattern):
     return results
 
 
-@memoize_simple
-def get_repo_object(root):
-    repo = git.Repo(root)
-    return repo
-
-SourceInfo = namedtuple('SourceInfo', 'commit author last_modified')
-
-def get_source_info(filename):
-    try:
-        root = get_repo_root(filename)
-    except ValueError:
-        return None
-    repo = get_repo_object(root)
-    path = filename
-    commit = repo.iter_commits(paths=path, max_count=1).next()
-    author = commit.author
-    last_modified = time.gmtime(commit.committed_date) 
-    commit = commit.hexsha
-    #print('%s last modified by %s on %s ' % (filename, author, last_modified))
-    return SourceInfo(commit=commit, author=author, last_modified=last_modified)
-
 
 @contract(src_dirs='seq(str)')
 def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
@@ -219,6 +195,15 @@ def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
         entry  = DocToJoin(docname='bibtex', contents=bib_contents,
                            source_info=None) 
         files_contents.append(tuple(entry))
+    
+    do_last_modified = True
+    
+    if do_last_modified:
+        data = context.comp(make_last_modified, files_contents=files_contents)
+        entry  = DocToJoin(docname='last_modified', contents=data,
+                           source_info=None) 
+        files_contents.append(tuple(entry))
+    
     
     template = get_main_template(root_dir)
     

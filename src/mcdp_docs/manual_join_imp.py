@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 from collections import OrderedDict, namedtuple
-from contracts.utils import raise_desc, indent, check_isinstance
 import json
-from mcdp.logs import logger
-from mcdp_docs.moving_copying_deleting import move_things_around
-from mcdp_utils_xml import add_class, bs
 import sys
 
 from bs4 import BeautifulSoup
 from bs4.element import Comment, Tag, NavigableString
+
 from contracts import contract
+from contracts.utils import raise_desc, indent, check_isinstance
+from mcdp.logs import logger
+from mcdp_docs.moving_copying_deleting import move_things_around
+from mcdp_utils_xml import add_class, bs
 
 from .footnote_javascript import add_footnote_polyfill
 from .macros import replace_macros
 from .minimal_doc import add_extra_css
 from .read_bibtex import extract_bibtex_blocks
-from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER,\
+from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER, \
     LABEL_WHAT_NUMBER_NAME, LABEL_WHAT, LABEL_NUMBER, LABEL_NAME, LABEL_SELF
 
 
@@ -799,7 +800,10 @@ if(window.location.hash) {
         log("Redirecting to <a href='"+outlink+"'><code>" + outlink+ "</code></a>");
         window.location = outlink;
     } else {
-        log("Could not find hashid <code>" + hashid+ "</code>.");
+        log("Could not find reference <code>" + hashid+ "</code>.");
+        log("This means that the text to which it refers has not made it to the master branch yet.");
+        log("Or, it might mean that the bot has not compiled and published the new duckiebook version yet.");
+        log("Note that this is completely normal if you are creating a new section.");
     }
 } else {
     log("No hash found");

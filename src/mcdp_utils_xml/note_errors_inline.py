@@ -30,7 +30,11 @@ if __name__ == '__main__':
     data = open(filename).read()
     soup = bs(data)
     s = search_for_errors(soup)
-    logger.error(s)
+    if s:
+        logger.error('Found a few errors:')
+        logger.error(s)
+    else:
+        logger.info('No errors found.')
 
 def insert_inset(element, short, long_error, klasses=[]):
     """ Inserts an errored details after element """

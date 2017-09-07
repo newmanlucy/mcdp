@@ -12,7 +12,7 @@ def render_number(n, style):
     assert ns > 20, (style, seq)
     if n >= (ns-1)**2:
         raise NotImplementedError('%s > %s' % (n, (ns-1)**2))
-    elif n + 1>= 2*ns:
+    elif n + 1 >= 2*ns:
         q, r = divmod(n+2, ns)
         return seq[q] + "-" + seq[r] #+ '-x2'
     elif n >= ns:
