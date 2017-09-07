@@ -73,10 +73,10 @@ jobs:
         - test-results-store:
                 path: out/comptests/junit
 
-# - run:
-#     when: always
-#     command: |
-#         ./misc/collect-test-artifacts.sh ${CIRCLE_ARTIFACTS} ${CIRCLE_TEST_REPORTS}
+        - run:
+            when: always
+            command: |
+                ./misc/generate-other-reports.sh 
 
         - store_artifacts:
               path: out

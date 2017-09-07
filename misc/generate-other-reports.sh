@@ -4,8 +4,8 @@ IFS=$'\n\t'
 
 i=${CIRCLE_NODE_INDEX}
 db=out/comptests/compmake
-outartifacts=$1
-outreports=$2
+# outartifacts=$1
+# outreports=$2
 outcompmake=${outartifacts}/compmake-stats
 
 echo Output dir = ${outartifacts}
@@ -23,15 +23,15 @@ bash -c "./misc/t 'config' > ${outcompmake}/config-${i}.txt"
 mkdir -p out/comptests-failures # in case there was no failure
 cp -R out/comptests-failures ${outartifacts}/comptests-failures
 #
-mkdir -p ${outreports}
-python src/mcdp_tests/comptest_to_junit.py ${db} > ${outreports}/junit.xml
-cp ${outreports}/junit.xml ${outartifacts}/junit-${i}.xml
-bash -c "pip freeze    > ${outartifacts}/pip_freeze_all-${i}.txt"
-bash -c "pip freeze -l > ${outartifacts}/pip_freeze_local-${i}.txt"
+# mkdir -p ${outreports}
+# python src/mcdp_tests/comptest_to_junit.py ${db} > ${outreports}/junit.xml
+# cp ${outreports}/junit.xml ${outartifacts}/junit-${i}.xml
+bash -c "pip freeze    > ${outcompmake}/pip_freeze_all-${i}.txt"
+bash -c "pip freeze -l > ${outcompmake}/pip_freeze_local-${i}.txt"
 
 echo End of $0
-
-echo Artifacts:
-find ${outartifacts}
-echo Reports:
-find ${outreports}
+#
+# echo Artifacts:
+# find ${outartifacts}
+# echo Reports:
+# find ${outreports}
