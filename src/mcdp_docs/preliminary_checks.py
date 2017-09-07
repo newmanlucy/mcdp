@@ -8,8 +8,7 @@ import re
 from .latex.latex_preprocess import extract_maths
 from .mark.markdown_transform import censor_markdown_code_blocks
 
-
-# from mcdp_docs.latex.latex_preprocess import extract_maths
+ 
 __all__ = ['do_preliminary_checks_and_fixes']
 
 def do_preliminary_checks_and_fixes(s):

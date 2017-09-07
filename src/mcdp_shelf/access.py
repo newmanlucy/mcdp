@@ -17,7 +17,8 @@ class ACLRule(object):
         self.privilege = privilege
         
         if not privilege in Privileges.ALL_PRIVILEGES:
-            raise ValueError('Unknown privilege %r' % privilege) 
+            msg = 'Unknown privilege %r' % privilege
+            raise ValueError(msg) 
             
         def valid_group(x):
             return len(x) > 0
