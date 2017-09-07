@@ -27,7 +27,7 @@ jobs:
         - run:
             name: update comptests
             command: |
-                pip uninstall -y comptests
+                # pip uninstall -y comptests
                 python setup.py develop
                 python -c "import comptests; print comptests.__version__"
 
