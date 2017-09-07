@@ -2,16 +2,15 @@
 from collections import namedtuple
 import time
 
+from bs4.element import Tag
 import git
 
+from mcdp_docs.manual_constants import MCDPManualConstants
+from mcdp_docs.manual_join_imp import DocToJoin
 from mcdp_utils_misc import memoize_simple
+from mcdp_utils_xml.parsing import bs
 
 from .github_edit_links import get_repo_root
-from mcdp_docs.manual_join_imp import DocToJoin
-from bs4.element import Tag
-from mcdp_utils_xml.parsing import bs
-from mcdp.constants import MCDPConstants
-from mcdp_docs.manual_constants import MCDPManualConstants
 
 
 @memoize_simple
@@ -82,7 +81,7 @@ def make_last_modified(files_contents, nmax=100):
         
     r.append(ul)
     s = str(r)
-    print s
+#     print s
     return s
 
 def get_main_header(s):

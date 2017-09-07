@@ -2,7 +2,7 @@ from collections import OrderedDict, namedtuple
 import os
 import sys
 
-from mcdp_utils_xml.parsing import bs
+from mcdp_utils_xml import bs
 
 
 GenericReference = namedtuple('GenericReference', 'id url title')
@@ -32,3 +32,5 @@ if __name__ == '__main__':
     res = read_references(dirname, base_url, 'python:')
     for k,v in res.items():
         print('%s: %s' % (k, v))
+        
+        
