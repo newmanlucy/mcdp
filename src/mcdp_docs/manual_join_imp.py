@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-from collections import OrderedDict
-from contracts.utils import raise_desc, indent
+from collections import OrderedDict, namedtuple
+from contracts.utils import raise_desc, indent, check_isinstance
 import json
 from mcdp.logs import logger
 from mcdp_docs.moving_copying_deleting import move_things_around
@@ -39,8 +39,10 @@ def get_manual_css_frag():
     else:
         assert False
 
+DocToJoin = namedtuple('DocToJoin', 'docname contents source_info')
 
-@contract(files_contents='list( tuple( tuple(str,str), str) )', returns='str',
+
+@contract(files_contents='list', returns='str',
           remove_selectors='None|seq(str)')
 def manual_join(template, files_contents, 
                 stylesheet, remove=None, extra_css=None,
@@ -48,15 +50,19 @@ def manual_join(template, files_contents,
                 hook_before_toc=None,
                 references={}):
     """
+        files_contents: a list of tuples that can be cast to DocToJoin:
+        where the string is a unique one to be used for job naming.
+        
         extra_css: if not None, a string of more CSS to be added
         Remove_selectors: list of selectors to remove (e.g. ".draft").
 
         hook_before_toc if not None is called with hook_before_toc(soup=soup)
         just before generating the toc
     """
-#     logger.debug('remove_selectors: %s' % remove_selectors)
-#     logger.debug('remove: %s' % remove)
-
+    check_isinstance(files_contents, list)
+     
+    files_contents = [ DocToJoin(*_) for _ in files_contents ]
+        
     template0 = template
     template = replace_macros(template)
 
@@ -83,12 +89,15 @@ def manual_join(template, files_contents,
         head.append(link)
 
     basename2soup = OrderedDict()
-    for (_libname, docname), data in files_contents:
-        if docname in basename2soup:
-            msg = 'Repeated docname %r' % docname
+    for doc_to_join in files_contents:
+        if doc_to_join.docname in basename2soup:
+            msg = 'Repeated docname %r' % doc_to_join.docname
             raise ValueError(msg)
-        frag = bs(data)
-        basename2soup[docname] = frag
+        from mcdp_docs.latex.latex_preprocess import assert_not_inside
+        assert_not_inside(doc_to_join.contents, 'DOCTYPE')
+        frag = bs(doc_to_join.contents)
+        
+        basename2soup[doc_to_join.docname] = frag
 
     fix_duplicated_ids(basename2soup)
 
@@ -96,14 +105,14 @@ def manual_join(template, files_contents,
     add_comments = False
     for docname, content in basename2soup.items():
 #         logger.debug('docname %r -> %s KB' % (docname, len(data) / 1024))
-        from mcdp_docs.latex.latex_preprocess import assert_not_inside
-        assert_not_inside(data, 'DOCTYPE')
+        
+        
         if add_comments:
             body.append(NavigableString('\n\n'))
             body.append(Comment('Beginning of document dump of %r' % docname))
             body.append(NavigableString('\n\n'))
         for x in content:
-            x2 = x.__copy__()  # not clone, not extract
+            x2 = x.__copy__()  # not clone, not extract, just copy
             body.append(x2)
         if add_comments:
             body.append(NavigableString('\n\n'))

@@ -1,22 +1,28 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
-from compmake.utils.friendly_path_imp import friendly_path
-from contracts.utils import raise_wrapped
+from collections import OrderedDict, namedtuple
 import logging
-from mcdp import logger
-from mcdp.constants import MCDPConstants
-from mcdp.exceptions import DPSyntaxError
-from mcdp_docs.check_bad_input_files import check_bad_input_file_presence
-from mcdp_library import MCDPLibrary
-from mcdp_library.stdlib import get_test_librarian
-from mcdp_utils_misc import expand_all, locate_files, get_md5
 import os
 import tempfile
+import time
 
-from contracts import contract
+import git
 from quickapp import QuickApp
 from reprep.utils import natsorted
 
+from compmake.utils.friendly_path_imp import friendly_path
+from contracts import contract
+from contracts.utils import raise_wrapped
+from mcdp import logger
+from mcdp.constants import MCDPConstants
+from mcdp.exceptions import DPSyntaxError
+from mcdp_docs.github_edit_links import get_repo_root
+from mcdp_docs.manual_join_imp import DocToJoin
+from mcdp_library import MCDPLibrary
+from mcdp_library.stdlib import get_test_librarian
+from mcdp_utils_misc import expand_all, locate_files, get_md5
+from mcdp_utils_misc.memoize_simple_imp import memoize_simple
+
+from .check_bad_input_files import check_bad_input_file_presence
 from .github_edit_links import add_edit_links
 from .manual_constants import MCDPManualConstants
 from .manual_join_imp import manual_join
@@ -30,8 +36,6 @@ class RenderManual(QuickApp):
     def define_options(self, params):
         params.add_string('src', help="""
         Directories with all contents; separate multiple entries with a colon.""")
-        
-        params.add_string('extra', default="")
         
         params.add_string('output_file', help='Output file')
         params.add_string('stylesheet', help='Stylesheet', default=None)
@@ -49,7 +53,7 @@ class RenderManual(QuickApp):
         src = options.src
         src_dirs = [_ for _ in src.split(":") if _ and _.strip()]
         
-        html_dirs = [_ for _ in options.extra.split(":") if _ and _.strip()]
+#         html_dirs = [_ for _ in options.extra.split(":") if _ and _.strip()]
         
 #         src_dirs = [expand_all(_) for _ in src_dirs]
         
@@ -67,7 +71,7 @@ class RenderManual(QuickApp):
         if symbols is not None:
             symbols = open(symbols).read()
 
-        bibfile = os.path.join(src_dirs[0], 'bibliography/bibliography.html')
+#         bibfile = os.path.join(src_dirs[0], 'bibliography/bibliography.html')
 
         if out_dir is None:
             out_dir = os.path.join('out', 'mcdp_render_manual')
@@ -77,11 +81,8 @@ class RenderManual(QuickApp):
             
         manual_jobs(context, 
                     src_dirs=src_dirs,
-                    extra_dirs=html_dirs, 
                     output_file=output_file,
                     generate_pdf=generate_pdf,
-                    
-                    bibfile=bibfile,
                     stylesheet=stylesheet,
                     remove=remove,
                     use_mathjax=use_mathjax,
@@ -134,11 +135,32 @@ def look_for_files(srcdirs, pattern):
     logger.info('Found %d files in %s' % (len(results), srcdirs))
     return results
 
-    
+
+@memoize_simple
+def get_repo_object(root):
+    repo = git.Repo(root)
+    return repo
+
+SourceInfo = namedtuple('SourceInfo', 'commit author last_modified')
+
+def get_source_info(filename):
+    try:
+        root = get_repo_root(filename)
+    except ValueError:
+        return None
+    repo = get_repo_object(root)
+    path = filename
+    commit = repo.iter_commits(paths=path, max_count=1).next()
+    author = commit.author
+    last_modified = time.gmtime(commit.committed_date) 
+    commit = commit.hexsha
+    #print('%s last modified by %s on %s ' % (filename, author, last_modified))
+    return SourceInfo(commit=commit, author=author, last_modified=last_modified)
+
 
 @contract(src_dirs='seq(str)')
-def manual_jobs(context, src_dirs, output_file, generate_pdf, bibfile, stylesheet,
-                use_mathjax, extra_dirs=[],
+def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
+                use_mathjax, 
                 remove=None, filter_soup=None, extra_css=None, symbols=None):
     """
         src_dirs: list of sources
@@ -159,13 +181,15 @@ def manual_jobs(context, src_dirs, output_file, generate_pdf, bibfile, styleshee
             continue
         logger.info('adding document %s ' % friendly_path(filename))
         
-        docname,_ = os.path.splitext(os.path.basename(filename))
+        docname, _ = os.path.splitext(os.path.basename(filename))
         
         contents = open(filename).read()
         contents_hash = get_md5(contents)[:8] 
         # because of hash job will be automatically erased if the source changes
         out_part_basename = '%03d-%s-%s' % (i, docname, contents_hash)
         job_id = '%s-%s-%s' % (docname, get_md5(filename)[:8], contents_hash)
+        
+        source_info = get_source_info(filename)
         
         # find the dir
         for d in src_dirs:
@@ -174,27 +198,29 @@ def manual_jobs(context, src_dirs, output_file, generate_pdf, bibfile, styleshee
         else:
             msg = 'Could not find dir for %s in %s' % (filename, src_dirs)
             
-        res = context.comp(render_book, d, docname, generate_pdf,
-                           data=contents, realpath=filename,
-                           use_mathjax=use_mathjax,
-                           symbols=symbols,
-                           main_file=output_file,
-                           out_part_basename=out_part_basename,
-                           filter_soup=filter_soup, 
-                           extra_css=extra_css,
-                           job_id=job_id)
- 
-        files_contents.append(res)
+        html_contents = context.comp(render_book, d, generate_pdf,
+                                   data=contents, realpath=filename,
+                                   use_mathjax=use_mathjax,
+                                   symbols=symbols,
+                                   main_file=output_file,
+                                   out_part_basename=out_part_basename,
+                                   filter_soup=filter_soup, 
+                                   extra_css=extra_css,
+                                   job_id=job_id)
+        
+        doc = DocToJoin(docname=out_part_basename, contents=html_contents,
+                        source_info=source_info)
+        files_contents.append(tuple(doc)) # compmake doesn't do namedtuples
     
     bib_files = get_bib_files(src_dirs)
     logger.debug('Found bib files:\n%s' % "\n".join(bib_files))
     if bib_files:
         bib_contents = job_bib_contents(context, bib_files)
-        entry  = ('unused', 'bibtex'), bib_contents 
-        files_contents.append(entry)
+        entry  = DocToJoin(docname='bibtex', contents=bib_contents,
+                           source_info=None) 
+        files_contents.append(tuple(entry))
     
     template = get_main_template(root_dir)
-    
     
     references = OrderedDict()
 #     base_url = 'http://book.duckietown.org/master/duckiebook/pdoc'
@@ -217,7 +243,6 @@ def manual_jobs(context, src_dirs, output_file, generate_pdf, bibfile, styleshee
 
     if os.path.exists(MCDPManualConstants.pdf_metadata_template):
         context.comp(generate_metadata, root_dir)
-
     
 
 def is_ignored_by_catkin(dn):
@@ -257,7 +282,7 @@ def generate_metadata(src_dir):
     out = MCDPManualConstants.pdf_metadata
     s = open(template).read()
 
-    from mcdp_docs.pipeline import replace_macros
+    from .pipeline import replace_macros
 
     s = replace_macros(s)
     with open(out, 'w') as f:
@@ -275,8 +300,8 @@ def write(s, out):
     print('Written %s ' % out)
 
 
-def render_book(src_dir, docname, generate_pdf, 
-                data, realpath,
+def render_book(src_dir, generate_pdf, 
+                data, realpath, 
                 main_file, use_mathjax, out_part_basename, filter_soup=None,
                 extra_css=None, symbols=None):
     from mcdp_docs.pipeline import render_complete
@@ -329,7 +354,7 @@ def render_book(src_dir, docname, generate_pdf,
     with open(fn, 'w') as f:
         f.write(doc)
 
-    return (('unused', out_part_basename), html_contents)
+    return html_contents
 
     
 

@@ -73,7 +73,7 @@ def syntax_highlighting(soup):
         text = code.text
         
         def subwith(s):
-            result = bs(s)
+            result = bs(s.encode('utf8'))
             result.name = 'div'
             pre = result.find('pre')
             pre.name = 'code'

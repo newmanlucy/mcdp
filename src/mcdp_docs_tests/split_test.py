@@ -52,7 +52,9 @@ def get_split_test_document():
         </style>
         <body></body></html>
         """
-    complete =  manual_join(template, files_contents, bibfile, stylesheet, remove=None, extra_css=None,
+    complete =  manual_join(template=template, 
+                            files_contents=files_contents,
+                            stylesheet=stylesheet, remove=None, extra_css=None,
                             hook_before_toc=None)
         
     return complete

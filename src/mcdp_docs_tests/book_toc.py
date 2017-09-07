@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from comptests.registrar import run_module_tests, comptest
-from mcdp_docs.manual_join_imp import manual_join, split_in_files
+from mcdp_docs.manual_join_imp import manual_join, split_in_files, DocToJoin
 from mcdp_docs.pipeline import render_complete
 from mcdp_docs.toc_number import number_styles, render_number
 from mcdp_docs.tocs import generate_toc
@@ -66,10 +66,11 @@ def test_toc_first():
 <p>a</p>
  
     """ 
+    files_contents= [DocToJoin(docname='a', contents=s, source_info=None)]
     
-    files_contents = [(('a','b'), s)]
     stylesheet = 'v_manual_blurb_ready'
-    res = manual_join(template=template, files_contents=files_contents, bibfile=None, stylesheet=stylesheet)
+    res = manual_join(template=template, files_contents=files_contents, 
+                      stylesheet=stylesheet)
 
     soup = bs(res)
     
@@ -247,10 +248,9 @@ Citing only number:
     realpath = __name__
     s = render_complete(library, s, raise_errors, realpath)
     
-    
-    files_contents = [(('a','b'), s)]
+    files_contents = [DocToJoin(docname='a',contents=s, source_info=None)]
     stylesheet = 'v_manual_blurb_ready'
-    res = manual_join(template=template, files_contents=files_contents, bibfile=None, stylesheet=stylesheet)
+    res = manual_join(template=template, files_contents=files_contents, stylesheet=stylesheet)
 
     fn = 'out/comptests/test_toc_numbers1.html' # XXX: write on test folder
     logger.info('written on %s' % fn)

@@ -211,5 +211,5 @@ class MCDPConstants(object):
     allow_soft_matching = True
     
     softy_mode = True
-    
+    preprocess_style_using_less = False
     

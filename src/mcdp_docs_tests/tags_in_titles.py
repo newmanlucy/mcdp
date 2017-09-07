@@ -1,11 +1,8 @@
 from comptests.registrar import comptest, run_module_tests
-from mcdp_docs_tests.transformations import tryit
+from mcdp_docs.manual_join_imp import manual_join, DocToJoin
 from mcdp_docs.pipeline import render_complete
 from mcdp_library.library import MCDPLibrary
-from mcdp_docs.manual_join_imp import manual_join
-from mcdp_utils_xml.project_text import project_html
 from mcdp_utils_xml.parsing import bs
-
 
 
 @comptest
@@ -37,10 +34,10 @@ Another.
     raise_errors = True
     realpath = 'transformations.py'
     s2 = render_complete(library, s, raise_errors, realpath, generate_pdf=False)
-    files_contents= [(('one', 'one'), s2)]
+    files_contents= [DocToJoin(docname='one', contents=s2, source_info=None)]
     stylesheet = 'v_manual_blurb_ready'
-    res = manual_join(template, files_contents, 
-                stylesheet, remove=None, extra_css=None,
+    res = manual_join(template=template, files_contents=files_contents, 
+                stylesheet=stylesheet, remove=None, extra_css=None,
                 remove_selectors=None,
                 hook_before_toc=None)
     soup = bs(res)
@@ -81,7 +78,7 @@ Another.
     raise_errors = True
     realpath = 'transformations.py'
     s2 = render_complete(library, s, raise_errors, realpath, generate_pdf=False)
-    files_contents= [(('one', 'one'), s2)]
+    files_contents= [DocToJoin(docname='one', contents=s2, source_info=None)]
     stylesheet = 'v_manual_blurb_ready'
     res = manual_join(template, files_contents, 
                 stylesheet, remove=None, extra_css=None,

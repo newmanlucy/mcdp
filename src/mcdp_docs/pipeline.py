@@ -21,6 +21,7 @@ from .prerender_math import escape_for_mathjax_back, escape_for_mathjax
 from .videos import make_videos
 from getpass import getuser
 from mcdp_docs.syntax_highlight import syntax_highlighting, strip_pre
+from mcdp.constants import MCDPConstants
 
 
 __all__ = [
@@ -179,7 +180,10 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
         check_if_any_href_is_invalid(soup)
         
     if getuser() == 'andrea':
-        run_lessc(soup)
+        if MCDPConstants.preprocess_style_using_less:
+            run_lessc(soup)
+        else:
+            logger.warning('preprocess_style_using_less=False might break the manual')
     fix_validation_problems(soup)
     
     strip_pre(soup)
