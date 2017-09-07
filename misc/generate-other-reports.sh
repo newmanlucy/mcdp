@@ -8,10 +8,9 @@ db=out/comptests/compmake
 # outreports=$2
 outcompmake=out/compmake-stats
 mkdir -p ${outcompmake}
-echo Output dir = ${outartifacts}
 echo Output outcompmake = ${outcompmake}
-mkdir -p ${outartifacts}
 mkdir -p ${outcompmake}
+
 bash -c "./misc/t 'config colorize 0; stats'   > ${outcompmake}/stats-${i}.txt"
 bash -c "./misc/t 'config colorize 0; ls'       > ${outcompmake}/ls-${i}.txt"
 bash -c "./misc/t 'config colorize 0; why failed'     > ${outcompmake}/why_failed-${i}.txt"
@@ -21,7 +20,7 @@ bash -c "./misc/t 'config colorize 0; details failed' > ${outcompmake}/details_f
 bash -c "./misc/t 'config' > ${outcompmake}/config-${i}.txt"
 
 mkdir -p out/comptests-failures # in case there was no failure
-cp -R out/comptests-failures ${outartifacts}/comptests-failures
+cp -R out/comptests-failures ${outcompmake}/comptests-failures
 #
 # mkdir -p ${outreports}
 # python src/mcdp_tests/comptest_to_junit.py ${db} > ${outreports}/junit.xml
