@@ -84,7 +84,7 @@ Another.
                 stylesheet, remove=None, extra_css=None,
                 remove_selectors=None,
                 hook_before_toc=None)
-#     print res
+
     soup = bs(res)
     element = soup.find(id='main_toc')
     print element
