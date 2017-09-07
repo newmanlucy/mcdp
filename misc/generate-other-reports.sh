@@ -6,8 +6,8 @@ i=${CIRCLE_NODE_INDEX}
 db=out/comptests/compmake
 # outartifacts=$1
 # outreports=$2
-outcompmake=${outartifacts}/compmake-stats
-
+outcompmake=out/compmake-stats
+mkdir -p ${outcompmake}
 echo Output dir = ${outartifacts}
 echo Output outcompmake = ${outcompmake}
 mkdir -p ${outartifacts}

@@ -47,7 +47,7 @@ circle: prepare_tests
 	DISABLE_CONTRACTS=1 \
 	# MCDP_TEST_LIBRARIES_EXCLUDE="mcdp_theory,droneD_complete_templates,manual" \
 	# 	comptests -o $(out) --nonose -c "rparmake n=2" $(package)
-	MCDP_TEST_LIBRARIES_EXCLUDE="mcdp_theory,droneD_complete_templates,manual" \
+	MCDP_TEST_LIBRARIES_EXCLUDE="mcdp_theory,droneD_complete_templates" \
 		comptests -o $(out) --nonose -c "rmake" $(package)
 	# ./misc/t ls failed
 	# ./misc/t parmake
@@ -84,7 +84,7 @@ coverage-report:
 
 coverage-coveralls:
 	# without --nogit, coveralls does not find the source code
-	COVERALLS_REPO_TOKEN=LDWrmw94YNEgp8YSpJ6ifSWb9aKfQt3wC coveralls --nogit --base_dir . 
+	COVERALLS_REPO_TOKEN=LDWrmw94YNEgp8YSpJ6ifSWb9aKfQt3wC coveralls --nogit --base_dir .
 
 clean:
 	rm -rf $(out) out/opt_basic_*

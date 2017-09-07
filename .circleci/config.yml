@@ -21,7 +21,7 @@ jobs:
             name: NPM
             command: |
                 curl -sL https://deb.nodesource.com/setup_6.x | bash
-                apt install nodejs
+                apt install -y nodejs
                 npm install MathJax-node jsdom@9.3 less
 
         - run:
@@ -76,7 +76,7 @@ jobs:
         - run:
             when: always
             command: |
-                ./misc/generate-other-reports.sh 
+                ./misc/generate-other-reports.sh
 
         - store_artifacts:
               path: out
