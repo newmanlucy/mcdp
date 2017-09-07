@@ -10,7 +10,6 @@ nose
 reprep
 pygments
 pygments_markdown_lexer
-
 bcrypt
 markdown
 junit_xml

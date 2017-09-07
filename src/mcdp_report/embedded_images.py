@@ -1,22 +1,21 @@
 import base64
 import cStringIO
+from contracts import contract
+from mcdp import logger
+from mcdp_report.pdf_conversion import ConversionError
+from mcdp_utils_misc import get_md5
+from mcdp_utils_xml import add_style
+from mcdp_utils_xml.note_errors_inline import note_error2,\
+    note_warning2
 import mimetypes
 import os
 import re
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from contracts import contract
 from contracts.utils import check_isinstance, raise_wrapped
 
-from mcdp import logger
-from mcdp_utils_misc import get_md5
-from mcdp_utils_xml import add_style
-
 from .pdf_conversion import png_from_pdf
-from mcdp_report.pdf_conversion import ConversionError
-from mcdp_utils_xml.note_errors_inline import  note_error2,\
-    note_warning2
 
 
 # def embed_images(html, basedir):

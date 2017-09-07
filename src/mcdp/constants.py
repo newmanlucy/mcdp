@@ -97,8 +97,8 @@ class MCDPConstants(object):
     manual_link_css_instead_of_including = True
     
     
-#     pdf_to_png_dpi = 300 # dots per inch
-    pdf_to_png_dpi = 100 # dots per inch
+    pdf_to_png_dpi = 300 # dots per inch
+#     pdf_to_png_dpi = 100 # dots per inch
     
     docs_xml_allow_empty_attributes = ['np', 'noprettify', 'nonumber', 'notoc',
                                         'mcdp-value', 'mcdp-poset']
