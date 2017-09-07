@@ -31,6 +31,8 @@ jobs:
                 python setup.py develop
                 python -c "import comptests; print comptests.__version__"
 
+                mkdir -p out/comptests-failures
+
         - run:
             name: Install
             command: |
@@ -71,10 +73,10 @@ jobs:
         - test-results-store:
                 path: out/comptests/junit
 
-        - run:
-            when: always
-            command: |
-                ./misc/collect-test-artifacts.sh ${CIRCLE_ARTIFACTS} ${CIRCLE_TEST_REPORTS}
+# - run:
+#     when: always
+#     command: |
+#         ./misc/collect-test-artifacts.sh ${CIRCLE_ARTIFACTS} ${CIRCLE_TEST_REPORTS}
 
         - store_artifacts:
               path: out
