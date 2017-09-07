@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
+from comptests.registrar import comptest, run_module_tests
+from mcdp import logger
+from mcdp_utils_xml import bs, has_class
 
 from bs4.element import NavigableString, Tag
-
-from comptests.registrar import comptest, run_module_tests
 from contracts import contract
-from mcdp import logger 
-from mcdp_utils_xml.parsing import bs
-from mcdp_utils_xml.add_class_and_style import has_class
 
 
 # What is recognized as a program name
@@ -30,10 +28,10 @@ programs = ['sudo', 'pip', 'git', 'python', 'cd', 'apt-get', 'rosrun',
             'shutdown', 'virtualenv', 'nodejs', 'cp', 'fc-cache', 'venv',
             'add-apt-repository', 'truncate', 'losetup','gparted',
             'rosbag', 'roscore',
-            'export', 'fdisk', 'rosdep', 'rosrun', 'rosparam', 'rospack', 'rostest'] \
+            'export', 'fdisk', 'rosdep', 'rosrun', 'rosparam', 'rospack',
+             'rostest'] \
             + ['|'] # pipe
-            
-# program_commands = ['install', 'develop', 'clone', 'config']
+             
 program_commands = []
 
 ConsoleLine = namedtuple('ConsoleLine', 'hostname symbol command')
@@ -67,28 +65,6 @@ def is_console_line(line):
     
     return ConsoleLine(hostname=hostname, symbol=symbol, command=command)
 
-@comptest
-def is_console_line_test():
-    s = "laptop $ sudo dd of=DEVICE if=IMG status=progress bs=4M "
-    ct = is_console_line(s)
-    assert ct is not None
-    assert ct.hostname == 'laptop'
-    assert ct.symbol == '$'
-    assert ct.command == 'sudo dd of=DEVICE if=IMG status=progress bs=4M'
-
-    s = " # echo"
-    ct = is_console_line(s)
-    assert ct is not None
-    assert ct.hostname == None
-    assert ct.symbol == '#'
-    assert ct.command == 'echo'
-    
-    s = " DOLLAR echo"
-    ct = is_console_line(s)
-    assert ct is not None
-    assert ct.hostname == None
-    assert ct.symbol == 'DOLLAR'
-    assert ct.command == 'echo'
 
 def mark_console_pres(soup):  
     mark_console_pres_highlight(soup)
