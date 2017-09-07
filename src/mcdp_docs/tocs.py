@@ -526,7 +526,7 @@ def substituting_empty_links(soup, raise_errors=False):
                     s = Tag(name='span')
                     s.string = '(unnamed)'  # XXX
                 else:
-                    s = bs(label_name)
+                    s = bs(label_name.encode('utf8'))
                     assert s.name == 'fragment'
                     s.name = 'span'
                     #add_class(s, 'produced-here') # XXX

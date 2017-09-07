@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from compmake.utils.filesystem_utils import make_sure_dir_exists
 from comptests.registrar import run_module_tests, comptest
+from contracts.utils import indent
 from mcdp_docs.manual_join_imp import manual_join, split_in_files, DocToJoin
 from mcdp_docs.pipeline import render_complete
 from mcdp_docs.toc_number import number_styles, render_number
@@ -7,8 +9,6 @@ from mcdp_docs.tocs import generate_toc
 from mcdp_library.library import MCDPLibrary
 from mcdp_tests import logger
 from mcdp_utils_xml.parsing import bs
-
-from contracts.utils import indent
 
 
 @comptest
@@ -253,6 +253,7 @@ Citing only number:
     res = manual_join(template=template, files_contents=files_contents, stylesheet=stylesheet)
 
     fn = 'out/comptests/test_toc_numbers1.html' # XXX: write on test folder
+    make_sure_dir_exists(fn)
     logger.info('written on %s' % fn)
     with open(fn, 'w') as f:
         f.write(res) 
