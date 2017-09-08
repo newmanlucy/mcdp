@@ -48,7 +48,7 @@ def make_last_modified(files_contents, nmax=100):
     r.append('\n')
     h = Tag(name='h1')
     h.append('Last modified')
-    r.attrs['id'] = 'last-modified'
+    h.attrs['id'] = 'sec:last-modified'
     r.append(h)
     r.append('\n')
     
