@@ -147,7 +147,7 @@ class Split(QuickApp):
                 pass
         
         id2filename = get_id2filename(filename2contents)
-        linkbase = 'link.html'
+        linkbase = 'link.html' # do not change (it's used by http://purl.org/dth)
         lb = create_link_base(id2filename)
         with open(os.path.join(output_dir, linkbase), 'w') as f:
             f.write(str(lb)) 

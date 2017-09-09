@@ -2156,20 +2156,20 @@ div#tocdiv .toc_a_for_part {
   font-weight: bold;
   font-size: 120%;
 }
+.navigation {
+  display: block;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+}
 .link_next,
 .link_prev {
   display: block;
   font-weight: bold;
 }
 .link_next {
-  width: 40em;
-  margin-top: 1em;
-  padding-right: 2em;
   float: right;
 }
 .link_prev {
-  margin-bottom: 1em;
-  padding-left: 2em;
   float: left;
 }
 .main-section-for-page {

@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 from collections import OrderedDict, namedtuple
+from contracts import contract
 import json
+from mcdp.logs import logger
+from mcdp_utils_xml import add_class, bs
 import sys
 
 from bs4 import BeautifulSoup
 from bs4.element import Comment, Tag, NavigableString
-
-from contracts import contract
 from contracts.utils import raise_desc, indent, check_isinstance
-from mcdp.logs import logger
-from mcdp_docs.moving_copying_deleting import move_things_around
-from mcdp_utils_xml import add_class, bs
 
 from .footnote_javascript import add_footnote_polyfill
 from .macros import replace_macros
 from .minimal_doc import add_extra_css
+from .moving_copying_deleting import move_things_around
 from .read_bibtex import extract_bibtex_blocks
 from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER, \
     LABEL_WHAT_NUMBER_NAME, LABEL_WHAT, LABEL_NUMBER, LABEL_NAME, LABEL_SELF
@@ -430,11 +429,13 @@ def add_prev_next_links(filename2contents):
         
         add_class(contents, 'main-section-for-page')
         
-        contents2= contents.__copy__() 
+#         contents2 = contents.__copy__() 
+        #contents2 = bs(str(contents))
+        contents2 = contents
         S.append(contents2)
-        S.attrs['id'] = contents2.attrs['id']
+        S.attrs['id'] = contents.attrs['id']
         
-        assert contents.parent is None
+#         assert contents.parent is None
 
         S.append(nav1.__copy__())
         
