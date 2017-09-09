@@ -7,7 +7,6 @@ from git.repo.base import Repo
 
 def get_repo_root(d):
     ''' Returns the root of the repo root, or raise ValueError. '''
-    print d
     if os.path.exists(os.path.join(d, '.git')):
         return d
     else:

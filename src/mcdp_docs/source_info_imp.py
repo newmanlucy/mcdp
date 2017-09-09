@@ -8,7 +8,7 @@ import git
 from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.manual_join_imp import DocToJoin
 from mcdp_utils_misc import memoize_simple
-from mcdp_utils_xml.parsing import bs
+from mcdp_utils_xml.parsing import bs, to_html_stripping_fragment
 
 from .github_edit_links import get_repo_root
 
@@ -44,7 +44,7 @@ def make_last_modified(files_contents, nmax=100):
     files_contents = list(sorted(files_contents, key=lambda x:x.source_info.last_modified,
                                  reverse=True))
     
-    r = Tag(name='div')
+    r = Tag(name='fragment')
     r.append('\n')
     h = Tag(name='h1')
     h.append('Last modified')
@@ -80,7 +80,7 @@ def make_last_modified(files_contents, nmax=100):
         ul.append('\n')
         
     r.append(ul)
-    s = str(r)
+    s = to_html_stripping_fragment(r)
 #     print s
     return s
 

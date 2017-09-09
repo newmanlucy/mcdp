@@ -1,7 +1,7 @@
-from bs4 import BeautifulSoup
-
-from contracts.utils import raise_desc
 import warnings
+
+from bs4 import BeautifulSoup
+from contracts.utils import raise_desc
 
 
 # def bs(fragment):

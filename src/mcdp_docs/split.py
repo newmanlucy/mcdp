@@ -7,13 +7,14 @@ from mcdp_utils_misc.string_utils import get_md5
 from mcdp_utils_xml import bs
 import os
 import time
-
-from bs4 import BeautifulSoup
+ 
 from bs4.element import Tag
 from quickapp import QuickApp
 
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .split_disqus import append_disqus
+from mcdp_utils_xml.parsing import bs_entire_document
+from mcdp_utils_misc.fileutils import write_data_to_file
 
 
 show_timing = False
@@ -54,13 +55,13 @@ def make_page(contents, head0, main_toc):
 
 def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2filename):
     html = open(ifilename).read()
-    soup = BeautifulSoup(html, 'lxml', from_encoding='utf-8')
+    soup = bs_entire_document(html)
     body = soup.html.body
     head0 = soup.html.head
     # extract the main toc if it is there
     main_toc = body.find(id='main_toc')
     if main_toc is None:
-        msg = 'No element #main_toc'
+        msg = 'Could not find the element #main_toc.'
         raise ValueError(msg)
 
     p = bs('<p><a href="index.html">Home</a></p>')
@@ -74,46 +75,31 @@ def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2fil
     with timeit('add_prev_next_links()...'):
         filename2contents = add_prev_next_links(filename2contents)
     
-
     with timeit('make_page()'):
         contents = filename2contents[filename]
         html = make_page(contents, head0, main_toc)
-    
     
     if mathjax: 
         if preamble is not None:
             with timeit('add_mathjax_preamble()'):
                 add_mathjax_preamble(html, preamble)
-            
-            
+                
         with timeit('add_mathjax_call'):
             add_mathjax_call(html)
-        
     
     if disqus:
         with timeit('disqus'):
             append_disqus(filename, html)
-        
-         
 
     with timeit('update_refs_'):
         update_refs_(filename, html, id2filename)
-
 
     with timeit('serialize'):
         result = str(html)
     
     with timeit('writing'): 
-        
-        if not os.path.exists(directory):
-            try:
-                os.makedirs(directory)
-            except:
-                pass
         fn = os.path.join(directory, filename)
-        with open(fn, 'w') as f:
-            f.write(result)
-    logger.info('written section to %s' % fn)
+        write_data_to_file(result, fn)
     
 
 
@@ -134,9 +120,11 @@ class Split(QuickApp):
         preamble = self.options.preamble
         disqus = self.options.disqus
         logger.setLevel(logging.DEBUG)
-    
+        
+        
         html = open(ifilename).read()
-        soup = BeautifulSoup(html, 'lxml', from_encoding='utf-8')
+        soup = bs_entire_document(html)
+#         soup = BeautifulSoup(html, 'lxml', from_encoding='utf-8')
         body = soup.html.body
         filename2contents = split_in_files(body)
         
@@ -159,8 +147,9 @@ class Split(QuickApp):
         data = "".join(id2filename[_] for _ in ids)
         links_hash = get_md5(data)[:8]
         
+        
         for filename, contents in filename2contents.items():
-            contents_hash = get_md5(str(contents) + preamble)[:8]
+            contents_hash = get_md5(str(contents) + str(preamble))[:8]
             # logger.info('Set up %r' % filename)
             job_id = '%s-%s-%s' % (filename, links_hash, contents_hash)
             context.comp(split_file, ifilename, output_dir, filename, mathjax=mathjax, preamble=preamble,

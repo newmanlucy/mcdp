@@ -42,6 +42,7 @@ class RenderManual(QuickApp):
         params.add_flag('pdf', help='Generate PDF version of code and figures.')
         params.add_string('remove', help='Remove the items with the given selector (so it does not mess indexing)',
                           default=None)
+        params.add_flag('no_resolve_references')
 
     def define_jobs_context(self, context):
         logger.setLevel(logging.DEBUG)
@@ -76,6 +77,8 @@ class RenderManual(QuickApp):
         for s in src_dirs:
             check_bad_input_file_presence(s)
 
+        resolve_references = not options.no_resolve_references
+        
         manual_jobs(context,
                     src_dirs=src_dirs,
                     output_file=output_file,
@@ -84,6 +87,7 @@ class RenderManual(QuickApp):
                     remove=remove,
                     use_mathjax=use_mathjax,
                     symbols=symbols,
+                    resolve_references=resolve_references
                     )
 
 
@@ -135,7 +139,7 @@ def look_for_files(srcdirs, pattern):
  
 @contract(src_dirs='seq(str)')
 def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
-                use_mathjax,
+                use_mathjax, resolve_references=True,
                 remove=None, filter_soup=None, extra_css=None, symbols=None):
     """
         src_dirs: list of sources
@@ -219,9 +223,10 @@ def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
 #         docname = os.path.basename(filename) + '_' + get_md5(filename)[:5]
 #         c = (('unused', docname), contents)
 #         files_contents.append(c)
-
+    
     d = context.comp(manual_join, template=template, files_contents=files_contents,
-                     stylesheet=stylesheet, remove=remove, references=references)
+                     stylesheet=stylesheet, remove=remove, references=references,
+                     resolve_references=resolve_references)
 
     context.comp(write, d, output_file)
 

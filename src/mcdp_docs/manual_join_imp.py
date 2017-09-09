@@ -20,6 +20,7 @@ from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER, \
     LABEL_WHAT_NUMBER_NAME, LABEL_WHAT, LABEL_NUMBER, LABEL_NAME, LABEL_SELF
 
 
+
 def get_manual_css_frag():
     """ Returns fragment of doc with CSS, either inline or linked,
         depending on MCDPConstants.manual_link_css_instead_of_including. """
@@ -48,7 +49,8 @@ def manual_join(template, files_contents,
                 stylesheet, remove=None, extra_css=None,
                 remove_selectors=None,
                 hook_before_toc=None,
-                references={}):
+                references={},
+                resolve_references=True):
     """
         files_contents: a list of tuples that can be cast to DocToJoin:
         where the string is a unique one to be used for job naming.
@@ -138,7 +140,7 @@ def manual_join(template, files_contents,
     
     generate_and_add_toc(d)
 
-    document_final_pass_after_toc(soup=d)
+    document_final_pass_after_toc(soup=d, resolve_references=resolve_references)
 
     if extra_css is not None:
         logger.info('adding extra CSS')
@@ -177,7 +179,7 @@ def document_final_pass_before_toc(soup, remove, remove_selectors):
     move_things_around(soup=soup)
 
     
-def document_final_pass_after_toc(soup):
+def document_final_pass_after_toc(soup, resolve_references=True):
     """ This is done to a final document """
     
     logger.info('checking errors')
@@ -189,8 +191,9 @@ def document_final_pass_after_toc(soup):
 
     # Note that this should be done *after* check_if_any_href_is_invalid()
     # because that one might fix some references
-    logger.info('substituting empty links')
-    substituting_empty_links(soup)
+    if resolve_references:
+        logger.info('substituting empty links')
+        substituting_empty_links(soup)
     
     warn_for_duplicated_ids(soup)
     
@@ -417,9 +420,9 @@ def add_prev_next_links(filename2contents):
         
         nav1 = Tag(name='div')
         add_class(nav1, 'navigation')
-        if id_prev is not None:
+        if id_prev:
             nav1.append(a_prev.__copy__())
-        if id_next is not None:
+        if id_next:
             nav1.append(a_next.__copy__())
         spacer = Tag(name='div')
         spacer.attrs['style'] ='clear:both'
@@ -433,7 +436,18 @@ def add_prev_next_links(filename2contents):
         #contents2 = bs(str(contents))
         contents2 = contents
         S.append(contents2)
-        S.attrs['id'] = contents.attrs['id']
+        #section_id = contents2.attrs['id']
+        from mcdp_docs.source_info_imp import get_main_header
+        actual_id = get_main_header(contents2) 
+        #section_id.replace(':section', '')
+        e = contents2.find(id=actual_id)
+        if e is not None:
+#             del e.attrs['id']
+            pass
+        else:
+            print('no found %r' % actual_id) 
+        S.attrs['id'] = actual_id 
+#         del contents2.attrs['id']
         
 #         assert contents.parent is None
 
@@ -594,7 +608,7 @@ def update_refs_(filename, contents, id2filename):
                         add_class(p, 'contains-link-same-file')
                     p = p.parent
         else:
-            logger.error('update_ref() for %r: no element with ID %s' % (filename, id_))
+            logger.error('update_ref() for %r: no element with ID "%s".' % (filename, id_))
      
 
 # def write_split_files(filename2contents, d):
@@ -894,7 +908,7 @@ def do_remove_stuff(soup, remove_selectors, remove):
             f.write(all_removed)
             
 
-def generate_and_add_toc(soup):
+def generate_and_add_toc(soup, toc_selector='div#toc'):
     logger.info('adding toc')
     body = soup.find('body')
     toc = generate_toc(body)
@@ -911,7 +925,7 @@ def generate_and_add_toc(soup):
         assert toc_ul.name == 'ul'
         toc_ul['class'] = 'toc'
         toc_ul['id'] = 'main_toc'
-        toc_selector = 'div#toc'
+        
         tocs = list(body.select(toc_selector))
         if not tocs:
             msg = 'Cannot find any element of type %r to put TOC inside.' % toc_selector
@@ -919,3 +933,4 @@ def generate_and_add_toc(soup):
         else:
             toc_place = tocs[0]
             toc_place.replaceWith(toc_ul)
+            

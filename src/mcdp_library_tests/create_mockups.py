@@ -10,6 +10,15 @@ from mcdp import logger
 
 __all__ = ['create_hierarchy']
 
+def remove_tree_contents(dirname):
+    """ Removes all under dirname, but not dirname itself. """
+    
+    for root, dirs, files in os.walk(dirname):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+            
 def create_hierarchy(files0):
     """ 
         Creates a temporary directory with the given files 
@@ -26,6 +35,7 @@ def create_hierarchy(files0):
     
     if True:
         d = '/tmp/create_hierarchy'
+        remove_tree_contents(d)
         logger.warning("using tmp dir " + d)
         
     write_hierarchy(d, files0)
