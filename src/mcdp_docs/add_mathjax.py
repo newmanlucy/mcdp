@@ -2,7 +2,7 @@ import sys
 
 from bs4 import BeautifulSoup, Tag
 
-from contracts.utils import raise_desc
+from contracts.utils import raise_desc, check_isinstance
 
 from .logs import logger
 import os
@@ -39,6 +39,7 @@ def add_mathjax_call(soup):
     head.append(script)
 
 def add_mathjax_preamble(soup, preamble):
+    check_isinstance(preamble, str)
     body = soup.find('body')
     if not body:
         msg = 'Could not find <body> element.'

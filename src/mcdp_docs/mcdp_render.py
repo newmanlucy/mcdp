@@ -47,6 +47,8 @@ class Render(QuickAppBase):
         symbols=self.options.symbols
         if symbols is not None:
             symbols = open(symbols).read()
+        else:
+            symbols = ''
             
         if not options.contracts:
             disable_all()
@@ -167,7 +169,7 @@ def render(library, docname, data, realpath, out_dir, generate_pdf, stylesheet,
     
     doc = to_html_entire_document(soup)
 
-    if use_mathjax:
+    if use_mathjax and symbols:
         add_mathjax_preamble(soup, symbols)
 
     d = os.path.dirname(out)
