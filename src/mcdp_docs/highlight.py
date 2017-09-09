@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
+import hashlib
+import os
+import sys
+import textwrap
+
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString, Tag
+
 from contracts.utils import raise_desc, raise_wrapped, indent
-import hashlib
 from mcdp import logger, MCDPConstants
 from mcdp.development import mcdp_dev_warning
 from mcdp.exceptions import DPSemanticError, DPSyntaxError, DPInternalError
@@ -14,15 +19,12 @@ from mcdp_lang.suggestions import get_suggestions, apply_suggestions, get_sugges
 from mcdp_lang.syntax import Syntax
 from mcdp_library.specs_def import SPEC_TEMPLATES
 from mcdp_report.html import ast_to_html
+from mcdp_report.image_source import ImagesFromPaths
 from mcdp_utils_xml import add_class, create_img_png_base64, create_a_to_data, note_error, to_html_stripping_fragment, describe_tag, project_html
 from mocdp.comp.context import Context
-import os
-import sys
-import textwrap
 
 from .make_plots_imp import make_plots
 from .pdf_ops import crop_pdf, get_ast_as_pdf
-from mcdp_report.image_source import ImagesFromPaths
 
 
 def html_interpret(library, soup, raise_errors=False,

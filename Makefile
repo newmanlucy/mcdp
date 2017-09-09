@@ -98,12 +98,18 @@ stats-locs-tests:
 	wc -l `find . -type f -name '*.py' | grep test`
 
 
+# bump-upload:
+# 	bumpversion patch
+# 	git push --tags
+# 	python setup.py sdist upload
+
 bump-upload:
 	bumpversion patch
 	git push --tags
-	python setup.py sdist upload
-
-
+	git push --all
+	rm -f dist/*
+	python setup.py sdist
+	twine upload dist/*
 
 readme-commands:
 	mcdp-solve -d $(libraries)/examples/example-battery.mcdplib battery "<1 hour, 0.1 kg, 1 W>"
