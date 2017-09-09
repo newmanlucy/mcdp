@@ -4,6 +4,9 @@ import tempfile
 from mcdp_utils_misc.fileutils import get_mcdp_tmp_dir
 from mcdp_utils_misc.locate_files_imp import locate_files
 from contracts.utils import check_isinstance
+from catalyst.commands.command import contextmanager
+import shutil
+from mcdp import logger
 
 __all__ = ['create_hierarchy']
 
@@ -20,6 +23,11 @@ def create_hierarchy(files0):
     mcdp_tmp_dir = get_mcdp_tmp_dir()
     prefix = 'mcdp_library_tests_create_hierarchy'
     d = tempfile.mkdtemp(dir=mcdp_tmp_dir, prefix=prefix)
+    
+    if True:
+        d = '/tmp/create_hierarchy'
+        logger.warning("using tmp dir " + d)
+        
     write_hierarchy(d, files0)
     return d
 
@@ -58,7 +66,6 @@ def mockup_flatten(d):
 #                 v = {'.empty':'# empty'}
             x = mockup_add_prefix(k, mockup_flatten(v))
             res.update(x)
-            
                 
         else:
             res[k] = v
@@ -94,3 +101,28 @@ def mockup_add_prefix(prefix, d):
         res['%s/%s' % (prefix, k)] = v
     return res
 
+@contextmanager
+def with_dir_content(data):
+    """
+        data = str -> YAML folder structure
+        
+        d1:
+            f1: |
+                contents of f1
+    """
+    import yaml
+    d = create_hierarchy(mockup_flatten(yaml.load(data)))
+    d0 = os.getcwd()
+    os.chdir(d)
+    try: 
+        yield
+    finally:
+        os.chdir(d0)
+        if False:
+            shutil.rmtree(d)
+        else:
+            logger.debug('Not deleting tmp dir %s' % d)
+            
+        
+        
+    

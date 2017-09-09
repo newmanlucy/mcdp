@@ -12,3 +12,10 @@ from .split_test import *
 from .tags_in_titles import *
 from .task_markers_test import *
 from .make_console_pre_tests import *
+
+
+def jobs_comptests(context):
+    # instantiation
+    from comptests import jobs_registrar
+    from comptests.registrar import jobs_registrar_simple
+    jobs_registrar_simple(context)
