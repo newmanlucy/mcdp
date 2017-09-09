@@ -4,9 +4,9 @@ import tempfile
 from mcdp_utils_misc.fileutils import get_mcdp_tmp_dir
 from mcdp_utils_misc.locate_files_imp import locate_files
 from contracts.utils import check_isinstance
-from catalyst.commands.command import contextmanager
 import shutil
 from mcdp import logger
+from contextlib import contextmanager
 
 __all__ = ['create_hierarchy']
 
