@@ -1,5 +1,5 @@
 from mcdp import logger
-from contracts.utils import raise_wrapped
+from mcdp_utils_xml.add_class_and_style import add_class
 
 try:
     import pygments  # @UnusedImport
@@ -59,10 +59,10 @@ def syntax_highlighting(soup):
         
     formatter = HtmlFormatter(linenos=False, cssclass="source")
 
-    styles = formatter.get_style_defs(arg='')
-    style = Tag(name='style')
-    style.append(styles)
-    soup.append(style)
+#     styles = formatter.get_style_defs(arg='')
+#     style = Tag(name='style')
+#     style.append(styles)
+#     soup.append(style)
     
      
     codes = list(soup.select('code'))
@@ -72,12 +72,14 @@ def syntax_highlighting(soup):
             continue
         text = code.text
         
-        def subwith(s):
+        def subwith(name_, s):
             result = bs(s.encode('utf8'))
             result.name = 'div'
             pre = result.find('pre')
             pre.name = 'code'
             Pre = Tag(name='pre')
+            add_class(Pre, 'syntax_highlight')
+            add_class(Pre, name_)
             Pre.append(pre)
             try:
                 code.parent.replace_with(Pre)
@@ -88,7 +90,7 @@ def syntax_highlighting(soup):
         for name, cond, lexer in languages:
             if name in code.attrs.get('class','') or cond(code):
                 result = highlight(text, lexer, formatter)
-                subwith(result)
+                subwith(name, result)
                 break
             
 #             logger.debug(indent(code.text, 'not python: '))

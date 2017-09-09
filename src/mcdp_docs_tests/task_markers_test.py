@@ -8,7 +8,7 @@ from nose.tools import assert_equal
 @comptest
 def task_markers_test1():
     s = "<p>We should do this (TODO)</p>"
-    e = """<p class="status-todo">We should do this </p>"""
+    e = """<p class="status-todo">We should do this (TODO)</p>"""
     soup = bs(s.strip())
     
     substitute_task_markers(soup)

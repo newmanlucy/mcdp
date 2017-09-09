@@ -93,6 +93,8 @@ def raise_if_any_error(results):
         'local-unittests-loading_python-posets-load2',
         'local-unittests-loading_python-primitivedps-load_primitivedp',
         'local-unittests-making-models-test1',
+        
+        'local-examples_devel-icra17-models-uncertain2',
     ]
     
     for e in expected:

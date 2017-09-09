@@ -2165,12 +2165,12 @@ div#tocdiv .toc_a_for_part {
   width: 40em;
   margin-top: 1em;
   padding-right: 2em;
-  text-align: right;
+  float: right;
 }
 .link_prev {
   margin-bottom: 1em;
   padding-left: 2em;
-  text-align: left;
+  float: left;
 }
 .main-section-for-page {
   min-height: 65vh;

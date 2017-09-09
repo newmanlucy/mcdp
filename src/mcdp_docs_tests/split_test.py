@@ -2,7 +2,8 @@ from bs4 import BeautifulSoup
 
 from comptests.registrar import run_module_tests, comptest
 from mcdp_docs.manual_join_imp import manual_join, split_in_files,\
-    add_prev_next_links, update_refs, get_id2filename, create_link_base
+    add_prev_next_links, update_refs, get_id2filename, create_link_base,\
+    DocToJoin
 from mcdp_docs.pipeline import render_complete
 from mcdp_library.library import MCDPLibrary
 from mcdp_tests import logger
@@ -39,11 +40,11 @@ def get_split_test_document():
     library = MCDPLibrary()
     realpath = 'internal'
     raise_errors = True
-    rendered = render_complete(library, md, raise_errors, realpath, generate_pdf=False,
-                    check_refs=True, do_math=True, filter_soup=None)
+    rendered = render_complete(library=library, s=md, raise_errors=raise_errors, 
+                               realpath=realpath, generate_pdf=False,
+                               check_refs=True,  filter_soup=None)
     
-    files_contents = [(('unused', 'unusued'), rendered)]
-    bibfile = None
+    files_contents = [DocToJoin(docname='unused', source_info=None, contents=rendered)]
     stylesheet = None
     template = """<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         </head>

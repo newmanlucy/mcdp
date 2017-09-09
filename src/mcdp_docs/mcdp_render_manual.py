@@ -150,7 +150,10 @@ def get_source_info(filename):
         return None
     repo = get_repo_object(root)
     path = filename
-    commit = repo.iter_commits(paths=path, max_count=1).next()
+    try:
+        commit = repo.iter_commits(paths=path, max_count=1).next()
+    except StopIteration: # not commited yet
+        return None
     author = commit.author
     last_modified = time.gmtime(commit.committed_date) 
     commit = commit.hexsha

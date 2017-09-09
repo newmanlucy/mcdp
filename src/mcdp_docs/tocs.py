@@ -510,7 +510,7 @@ def substituting_empty_links(soup, raise_errors=False):
             a.append(s)
 
             if label_name is not None and '<' in label_name:
-                contents = bs(label_name)
+                contents = bs(label_name.encode('utf8'))
                 # sanitize the label name
                 for br in contents.findAll('br'):
                     br.replaceWith(NavigableString(' '))
@@ -551,7 +551,7 @@ def substituting_empty_links(soup, raise_errors=False):
             else:
                 label = label_what_number
 
-            frag = bs(label)
+            frag = bs(label.encode('utf8'))
             assert frag.name == 'fragment'
             frag.name = 'span'
             add_class(frag, 'reflabel')

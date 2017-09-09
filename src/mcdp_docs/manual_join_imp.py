@@ -376,7 +376,7 @@ def reorganize_contents(body0, add_debug_comments=False):
 
     # now dissolve all the elements of the type <div class='without-header-inside'>
     options = ['without-header-inside', 'with-header-inside']
-    for x in reorganized.findAll('div', attrs={'class':
+    for x in reorganized.find_all('div', attrs={'class':
                                                lambda x: x is not None and x in options}):
         dissolve(x)
 
@@ -393,32 +393,52 @@ def dissolve(x):
 
     x.extract()
 
+ATTR_PREV = 'prev'
+ATTR_NEXT = 'next'
+
 def add_prev_next_links(filename2contents):
     new_one = OrderedDict()
     for filename, contents in list(filename2contents.items()):
+        id_prev = contents.attrs[ATTR_PREV]
+        a_prev = Tag(name='a')
+        a_prev.attrs['href'] = '#' + str(id_prev)
+        a_prev.attrs['class'] = 'link_prev'
+        a_prev.append('prev')
+
+        id_next = contents.attrs[ATTR_NEXT]
+        a_next = Tag(name='a')
+        a_next.attrs['href'] = '#' + str(id_next)
+        a_next.attrs['class'] = 'link_next'
+        a_next.append('next')
+
+        
         S = Tag(name='div')
         S.attrs['class'] = ['super']
         
-        id_prev = contents.attrs['prev']
+        nav1 = Tag(name='div')
+        add_class(nav1, 'navigation')
         if id_prev is not None:
-            a = Tag(name='a')
-            a.attrs['href'] = '#' + id_prev
-            a.attrs['class'] = 'link_prev'
-            a.append('prev')
-            S.append(a)
+            nav1.append(a_prev.__copy__())
+        if id_next is not None:
+            nav1.append(a_next.__copy__())
+        spacer = Tag(name='div')
+        spacer.attrs['style'] ='clear:both'
+        nav1.append(spacer)
+        
+        S.append(nav1.__copy__())
         
         add_class(contents, 'main-section-for-page')
-        S.append(contents)
         
-        id_next = contents.attrs['next']
-        if id_next is not None:
-            a = Tag(name='a')
-            a.attrs['href'] = '#' + id_next
-            a.attrs['class'] = 'link_next'
-            a.append('next')
-            S.append(a)
-            
+        contents2= contents.__copy__() 
+        S.append(contents2)
+        S.attrs['id'] = contents2.attrs['id']
+        
+        assert contents.parent is None
+
+        S.append(nav1.__copy__())
+        
         new_one[filename] = S
+
     return new_one
 
 def split_in_files(body, levels=['sec', 'part']):
@@ -433,6 +453,7 @@ def split_in_files(body, levels=['sec', 'part']):
     for section in body.select('section.with-header-inside'):
         level = section.attrs['level']
         if level in levels:
+            #section.extract()
             sections.append(section)
 
     for i, section in enumerate(sections):
@@ -442,13 +463,13 @@ def split_in_files(body, levels=['sec', 'part']):
     filenames = []
     for i, section in enumerate(sections):
         if i < len(sections) - 1:
-            section.attrs['next'] = sections[i+1].attrs['id']
+            section.attrs[ATTR_NEXT] = sections[i+1].attrs['id']
         else:
-            section.attrs['next'] = None
+            section.attrs[ATTR_NEXT] = ""
         if i == 0:
-            section.attrs['prev'] = None
+            section.attrs[ATTR_PREV] = ""
         else:
-            section.attrs['prev'] = sections[i-1].attrs['id']
+            section.attrs[ATTR_PREV] = sections[i-1].attrs['id']
 
         id_ = section.attrs['id']
         id_sanitized = id_.replace(':', '_').replace('-','_').replace('_section','')
@@ -498,20 +519,20 @@ def split_in_files(body, levels=['sec', 'part']):
 
     for i, (filename, section) in enumerate(file2contents.items()):
         if i < len(ids) - 1:
-            section.attrs['next'] = ids[i+1]
+            section.attrs[ATTR_NEXT] = ids[i+1]
         else:
-            section.attrs['next'] = None
+            section.attrs[ATTR_NEXT] = ""
         if i == 0:
-            section.attrs['prev'] = None
+            section.attrs[ATTR_PREV] = ""
         else:
-            section.attrs['prev'] = ids[i-1]
+            section.attrs[ATTR_PREV] = ids[i-1]
 
     return file2contents
 
 def get_id2filename(filename2contents):
     ignore_these = [
-        'tocdiv', 'not-toc', 'disqus_thread', 'disqus_section', 'dsq-count-scr',
-        'banner',
+        'tocdiv', 'not-toc', 'disqus_thread', 
+        'disqus_section', 'dsq-count-scr', 'banner',
     ]
     
     id2filename = {}
@@ -533,13 +554,13 @@ def get_id2filename(filename2contents):
     return id2filename
 
 def update_refs(filename2contents, id2filename):
-    
     for filename, contents in filename2contents.items():
-        update_refs(filename, contents, id2filename)
+        update_refs_(filename, contents, id2filename)
         
 def update_refs_(filename, contents, id2filename):
-    test_href = lambda x: x is not None and x.startswith('#') 
-    for a in contents.findAll(href=test_href):
+    test_href = lambda x: x is not None and x.startswith('#')
+    elements = list(contents.find_all('a', attrs={'href':test_href})) 
+    for a in elements: 
         href = a.attrs['href']
         assert href[0] == '#'
         id_ = href[1:] # Todo, parse out "?"
