@@ -51,6 +51,7 @@ body > p:first-of-type::before {
 @import 'colors';
 @import 'captions';
 @import 'vimeo';
+@import 'pygments';
 // TODO: re-add in MCDP
 // @import 'mcdp_keywords_in_headers';
 
@@ -994,18 +995,18 @@ h1 + .github-etc-links  {
 
 
 kbd + kbd {
-    margin-left: .1em;
+    margin-left: 0.1em;
 }
 
 kbd {
     display: inline-block;
     // margin: 0 .1em;
-    padding: .06em .4em;
+    padding: .06em 0.4em;
     font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
     font-size: 50%;
     /* line-height: 1.4; */
     /* color: #242729; */
-    text-shadow: 0 0.05em 0 #FFF;
+    text-shadow: 0 0.05em 0 #fff;
     background-color: #e1e3e5;
     border: 1px solid #adb3b9;
     border-radius: 3px;
@@ -1033,8 +1034,8 @@ pre {
     margin-left: 25px !important;
 }
 
-.on-laptop:before,
-.on-duckiebot:before {
+.on-laptop::before,
+.on-duckiebot::before {
     // outline: solid 1px red;
     content: ' ';
     display: block;
@@ -1046,7 +1047,7 @@ pre {
 }
 
 // https://websemantics.uk/tools/image-to-data-uri-converter/
-.on-duckiebot:before {
+.on-duckiebot::before {
     width: 13px;
     height: 16px;
     // background-image: url(http://placehold.it/32x32);
@@ -1054,7 +1055,7 @@ pre {
 
 }
 
-.on-laptop:before {
+.on-laptop::before {
     width: 16px;
     height: 16px;
 
