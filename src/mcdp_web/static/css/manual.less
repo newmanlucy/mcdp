@@ -1090,3 +1090,15 @@ strong {
 /*figure.flow-subfigures div.generated-figure-wrap { display: inline-block; }*/
 
 figure.flow-subfigures div.generated-figure-wrap { display: inline-block; }
+
+// Links to master
+a.link-to-master::after {
+    content: ' (master)';
+    color: orange;
+    text-decoration: none;
+    font-size: 80%;
+}
+a.link-to-master {
+    // outline: solid 1px orange;
+    // padding: 2px;
+}

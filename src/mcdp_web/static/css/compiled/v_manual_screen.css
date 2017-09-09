@@ -2061,6 +2061,12 @@ strong {
 figure.flow-subfigures div.generated-figure-wrap {
   display: inline-block;
 }
+a.link-to-master::after {
+  content: ' (master)';
+  color: orange;
+  text-decoration: none;
+  font-size: 80%;
+}
 @media screen {
   body {
     display: inline-block;
