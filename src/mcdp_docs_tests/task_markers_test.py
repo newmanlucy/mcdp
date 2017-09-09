@@ -1,8 +1,8 @@
+from nose.tools import assert_equal
+
 from comptests.registrar import comptest, run_module_tests
 from mcdp_docs.task_markers import substitute_task_markers
 from mcdp_utils_xml.parsing import bs, to_html_stripping_fragment
-
-from nose.tools import assert_equal
 
 
 @comptest

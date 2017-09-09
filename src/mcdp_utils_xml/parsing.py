@@ -10,7 +10,8 @@ def bs(fragment):
     """ Returns the contents wrapped in an element called "fragment".
         Expects fragment as a str in utf-8 """
     if isinstance(fragment, unicode):
-        warnings.warn('You provided unicode instead of str', stacklevel=2)
+#         warnings.warn('You provided unicode instead of str', stacklevel=2)
+        fragment = fragment.encode('utf8')
     s = '<fragment>%s</fragment>' % fragment
     
     parsed = BeautifulSoup(s, 'lxml', from_encoding='utf-8')

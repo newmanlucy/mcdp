@@ -24,15 +24,6 @@ def read_config_test():
     d = Recipe.from_yaml(config)
     print d
     
-    
-@comptest
-def compose2():
-    f1 = """
-<html>
-    <head></head>
-"""
-
-
 
 def run_app(app, args):
     main = app.get_sys_main()
@@ -120,7 +111,7 @@ book.version.yaml: |
                '--stylesheet', 'v_manual_split',
                '--mathjax', '0',
                '-o', 'out/out1',
-#                '--no_resolve_references',
+                '--no_resolve_references',
                '--output_file', res])
                  
         assert os.path.exists(res)
@@ -131,24 +122,6 @@ book.version.yaml: |
         run_app(Split, ['--filename', 'dist/master/book.html', '--output_dir', 'dist/master/book'])
         run_app(Compose, ['--config', 'book.version.yaml'])
         run_app(Split, ['--filename', 'dist/version/book.html', '--output_dir', 'dist/version/book'])
-        
-#          
-#     
-# def select(soup, includes):
-#     doc = soup.__copy__()
-#     body = Tag(name='body')
-#     doc.body.replace_with(body)
-#     for i in includes:
-#         id_ = '%s:section' % i 
-#         try:
-#             e = soup_find_absolutely(soup, id_)
-#         except KeyError:
-#             msg = 'Cannot find ID %r in document.' % id_
-#             raise DPSemanticError(msg)
-#         logger.info('Adding section %r' %  e.attrs['id'])
-#         body.append(e.__copy__()) 
-#     return doc
-#     
 
 if __name__ == '__main__':
     run_module_tests()
