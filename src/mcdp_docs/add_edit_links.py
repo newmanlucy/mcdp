@@ -28,13 +28,15 @@ def add_github_links_if_edit_url(soup, permalink_prefix='http://purl.org/dth/'):
         if hid is not None:
             if ':' in hid:
                 hid = hid[hid.index(':')+1:]
-            url = permalink_prefix + str(hid)
-            a.attrs['href'] = url
-            a.string = '🔗'
-            a.attrs['class'] = 'purl-link'
-            a.attrs['title'] = "Use this link as the permanent link to share with people."
-#             s.append(Tag(name='br')) 
-            s.append(a)
+            if not 'autoid' in hid:
+                url = permalink_prefix + str(hid)
+                logger.debug('adding link to %r' % url)
+                a.attrs['href'] = url
+                a.string = '🔗'
+                a.attrs['class'] = 'purl-link'
+                a.attrs['title'] = "Use this link as the permanent link to share with people."
+    #             s.append(Tag(name='br')) 
+                s.append(a)
 
         s.attrs['class'] = 'github-etc-links'
         h.insert_after(s)

@@ -1,7 +1,6 @@
 from contracts import contract
 import copy
 from mcdp import logger
-from mcdp import logger
 from mcdp_docs.add_edit_links import add_github_links_if_edit_url
 from mcdp_docs.composing.recipes import Recipe, RecipeContext, append_all
 from mcdp_docs.manual_constants import MCDPManualConstants
@@ -15,7 +14,7 @@ from mcdp_utils_xml.parsing import bs_entire_document
 from bs4.element import Tag
 from contracts.utils import check_isinstance, raise_wrapped
 from decent_params.utils.script_utils import UserError
-from quickapp.quick_app_base import QuickAppBase
+from quickapp import QuickAppBase
 import yaml
 
 
@@ -84,6 +83,7 @@ def go(compose_config):
     permalink_prefix = compose_config.purl_prefix
     
     # Read input file
+    logger.info('Reading %s' % input_)
     data = open(input_).read()
     soup = bs_entire_document(data)
     # Create context
