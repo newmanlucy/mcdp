@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 from collections import OrderedDict, namedtuple
 from contracts import contract
-import json
+import json, os
 from mcdp.logs import logger
 from mcdp_utils_xml import add_class, bs
 import sys
@@ -34,7 +34,7 @@ def get_manual_css_frag():
         link = Tag(name='link')
         link['rel'] = 'stylesheet'
         link['type'] = 'text/css'
-        link['href'] = 'VERSIONCSS' 
+        link['href'] = 'VERSIONCSS'
 
         return frag
     else:
@@ -45,7 +45,7 @@ DocToJoin = namedtuple('DocToJoin', 'docname contents source_info')
 
 @contract(files_contents='list', returns='str',
           remove_selectors='None|seq(str)')
-def manual_join(template, files_contents, 
+def manual_join(template, files_contents,
                 stylesheet, remove=None, extra_css=None,
                 remove_selectors=None,
                 hook_before_toc=None,
@@ -54,7 +54,7 @@ def manual_join(template, files_contents,
     """
         files_contents: a list of tuples that can be cast to DocToJoin:
         where the string is a unique one to be used for job naming.
-        
+
         extra_css: if not None, a string of more CSS to be added
         Remove_selectors: list of selectors to remove (e.g. ".draft").
 
@@ -62,9 +62,9 @@ def manual_join(template, files_contents,
         just before generating the toc
     """
     check_isinstance(files_contents, list)
-     
+
     files_contents = [ DocToJoin(*_) for _ in files_contents ]
-        
+
     template0 = template
     template = replace_macros(template)
 
@@ -74,7 +74,7 @@ def manual_join(template, files_contents,
     if d.html is None:
         s = "Invalid template"
         raise_desc(ValueError, s, template0=template0)
-        
+
     assert d.html is not None
     assert '<html' in str(d)
     head = d.find('head')
@@ -98,7 +98,7 @@ def manual_join(template, files_contents,
         from mcdp_docs.latex.latex_preprocess import assert_not_inside
         assert_not_inside(doc_to_join.contents, 'DOCTYPE')
         frag = bs(doc_to_join.contents)
-        
+
         basename2soup[doc_to_join.docname] = frag
 
     fix_duplicated_ids(basename2soup)
@@ -107,8 +107,8 @@ def manual_join(template, files_contents,
     add_comments = False
     for docname, content in basename2soup.items():
 #         logger.debug('docname %r -> %s KB' % (docname, len(data) / 1024))
-        
-        
+
+
         if add_comments:
             body.append(NavigableString('\n\n'))
             body.append(Comment('Beginning of document dump of %r' % docname))
@@ -122,11 +122,12 @@ def manual_join(template, files_contents,
             body.append(NavigableString('\n\n'))
 
     extract_bibtex_blocks(d)
-    logger.info('external bib') 
+    logger.info('external bib')
 
     bibhere = d.find('div', id='put-bibliography-here')
     if bibhere is None:
-        logger.warning('Could not find #put-bibliography-here in document. Adding one at end of document')
+        logger.warning('Could not find #put-bibliography-here in document.'
+                       'Adding one at end of document')
         bibhere = Tag(name='div')
         bibhere.attrs['id'] = 'put-bibliography-here'
         d.find('body').append(bibhere)
@@ -134,10 +135,10 @@ def manual_join(template, files_contents,
     do_bib(d, bibhere)
 
     document_final_pass_before_toc(d, remove, remove_selectors)
-    
+
     if hook_before_toc is not None:
-        hook_before_toc(soup=d) 
-    
+        hook_before_toc(soup=d)
+
     generate_and_add_toc(d)
 
     document_final_pass_after_toc(soup=d, resolve_references=resolve_references)
@@ -178,10 +179,10 @@ def document_final_pass_before_toc(soup, remove, remove_selectors):
     do_remove_stuff(body2, remove_selectors, remove)
     move_things_around(soup=soup)
 
-    
+
 def document_final_pass_after_toc(soup, resolve_references=True):
     """ This is done to a final document """
-    
+
     logger.info('checking errors')
     check_various_errors(soup)
 
@@ -194,12 +195,12 @@ def document_final_pass_after_toc(soup, resolve_references=True):
     if resolve_references:
         logger.info('substituting empty links')
         substituting_empty_links(soup)
-    
+
     warn_for_duplicated_ids(soup)
-    
+
 def document_only_once(html_soup):
     add_footnote_polyfill(html_soup)
-    
+
 
 def do_bib(soup, bibhere):
     """ find used bibliography entries put them there """
@@ -414,10 +415,10 @@ def add_prev_next_links(filename2contents):
         a_next.attrs['class'] = 'link_next'
         a_next.append('next')
 
-        
+
         S = Tag(name='div')
         S.attrs['class'] = ['super']
-        
+
         nav1 = Tag(name='div')
         add_class(nav1, 'navigation')
         if id_prev:
@@ -427,32 +428,32 @@ def add_prev_next_links(filename2contents):
         spacer = Tag(name='div')
         spacer.attrs['style'] ='clear:both'
         nav1.append(spacer)
-        
+
         S.append(nav1.__copy__())
-        
+
         add_class(contents, 'main-section-for-page')
-        
-#         contents2 = contents.__copy__() 
+
+#         contents2 = contents.__copy__()
         #contents2 = bs(str(contents))
         contents2 = contents
         S.append(contents2)
         #section_id = contents2.attrs['id']
         from mcdp_docs.source_info_imp import get_main_header
-        actual_id = get_main_header(contents2) 
+        actual_id = get_main_header(contents2)
         #section_id.replace(':section', '')
         e = contents2.find(id=actual_id)
         if e is not None:
 #             del e.attrs['id']
             pass
         else:
-            print('no found %r' % actual_id) 
-        S.attrs['id'] = actual_id 
+            print('no found %r' % actual_id)
+        S.attrs['id'] = actual_id
 #         del contents2.attrs['id']
-        
+
 #         assert contents.parent is None
 
         S.append(nav1.__copy__())
-        
+
         new_one[filename] = S
 
     return new_one
@@ -489,10 +490,10 @@ def split_in_files(body, levels=['sec', 'part']):
 
         id_ = section.attrs['id']
         id_sanitized = id_.replace(':', '_').replace('-','_').replace('_section','')
-        
+
 #         filename = '%03d_%s.html' % (i, id_sanitized)
         filename = '%s.html' % (id_sanitized)
-        
+
         if filename in filenames:
             for i in xrange(1000):
                 filename = '%s-%d.html' % (id_sanitized, i)
@@ -518,14 +519,14 @@ def split_in_files(body, levels=['sec', 'part']):
     # rename the first to be called index.html
     name_for_first = 'index.html'
     first = list(file2contents)[0]
-    
+
     # add remaining material of body in first section
     body.name = 'div'
     body.attrs['class'] = 'remaining-material'
     body.extract()
-    file2contents[first].insert(0, body) 
-    
-    file2contents = OrderedDict([(name_for_first if k == first else k, v) 
+    file2contents[first].insert(0, body)
+
+    file2contents = OrderedDict([(name_for_first if k == first else k, v)
                                  for k, v in file2contents.items()])
 
 
@@ -547,10 +548,10 @@ def split_in_files(body, levels=['sec', 'part']):
 
 def get_id2filename(filename2contents):
     ignore_these = [
-        'tocdiv', 'not-toc', 'disqus_thread', 
+        'tocdiv', 'not-toc', 'disqus_thread',
         'disqus_section', 'dsq-count-scr', 'banner',
     ]
-    
+
     id2filename = {}
     for filename, contents in filename2contents.items():
 
@@ -566,17 +567,17 @@ def get_id2filename(filename2contents):
         if 'id' in contents.attrs:
             id_ = contents.attrs['id']
             id2filename[id_] = filename
-            
+
     return id2filename
 
 def update_refs(filename2contents, id2filename):
     for filename, contents in filename2contents.items():
         update_refs_(filename, contents, id2filename)
-        
+
 def update_refs_(filename, contents, id2filename):
     test_href = lambda x: x is not None and x.startswith('#')
-    elements = list(contents.find_all('a', attrs={'href':test_href})) 
-    for a in elements: 
+    elements = list(contents.find_all('a', attrs={'href':test_href}))
+    for a in elements:
         href = a.attrs['href']
         assert href[0] == '#'
         id_ = href[1:] # Todo, parse out "?"
@@ -591,17 +592,17 @@ def update_refs_(filename, contents, id2filename):
                 new_href = '#%s' % (id_)
                 a.attrs['href'] = new_href
                 add_class(a, 'link-same-file')
-                
+
                 if 'toc_link' in a.attrs['class']:
                     p = a.parent
                     assert p.name == 'li'
                     add_class(p, 'link-same-file-direct-parent')
-                    
+
                     # now find all the lis
                     for x in list(p.descendants):
                         if isinstance(x, Tag) and x.name == 'li':
                             add_class(x, 'link-same-file-inside')
-                 
+
                 p = a.parent
                 while p:
                     if isinstance(p, Tag) and p.name in ['ul', 'li']:
@@ -609,7 +610,7 @@ def update_refs_(filename, contents, id2filename):
                     p = p.parent
         else:
             logger.error('update_ref() for %r: no element with ID "%s".' % (filename, id_))
-     
+
 
 # def write_split_files(filename2contents, d):
 #     if not os.path.exists(d):
@@ -737,11 +738,11 @@ def copy_attributes_from_header(section, header):
 
 def make_sections2(elements, is_marker, copy=True, element_name='div', attrs={},
                    add_debug_comments=False):
-    
+
     def debug(s):
         if False:
             logger.debug(s)
-            
+
     sections = []
     def make_new():
         x = Tag(name=element_name)
@@ -761,7 +762,7 @@ def make_sections2(elements, is_marker, copy=True, element_name='div', attrs={},
 
             current_section = make_new()
             debug('marker %s' % x.attrs.get('id', 'unnamed'))
-            current_header = x.__copy__() 
+            current_header = x.__copy__()
             current_section['class'] = 'with-header-inside'
         else:
             x2 = x.__copy__() if copy else x.extract()
@@ -855,14 +856,14 @@ def create_link_base(id2filename):
     body = Tag(name='body')
     html.append(body)
     s = """
-   
-links = %s; 
-    
+
+links = %s;
+
 """ % json.dumps(id2filename)
     script = Tag(name='script')
     script.append(s)
     body.append(script)
-    
+
     script = Tag(name='script')
     script.append(jump_script)
     body.append(script)
@@ -879,9 +880,9 @@ def do_remove_stuff(soup, remove_selectors, remove):
         all_selectors.append(remove)
     if remove_selectors:
         all_selectors.extend(remove_selectors)
-        
+
     logger.debug('all_selectors: %s' % all_selectors)
-        
+
     all_removed = ''
     for selector in all_selectors:
         nremoved = 0
@@ -902,30 +903,30 @@ def do_remove_stuff(soup, remove_selectors, remove):
             all_removed += '\n\n' + '-' * 100 + '\n\n'
 
         logger.info('Removed %d elements of selector %r' % (nremoved, remove))
-    
+
     if all_removed:
         with open('parts-removed.html', 'w') as f:
             f.write(all_removed)
-            
+
 
 def generate_and_add_toc(soup, toc_selector='div#toc'):
     logger.info('adding toc')
     body = soup.find('body')
     toc = generate_toc(body)
-    
+
 #     logger.info('TOC:\n' + str(toc))
     toc_ul = bs(toc).ul
     if toc_ul is None:
         # empty TOC
         msg = 'Could not find toc'
-        logger.warning(msg) 
+        logger.warning(msg)
         # XXX
     else:
         toc_ul.extract()
         assert toc_ul.name == 'ul'
         toc_ul['class'] = 'toc'
         toc_ul['id'] = 'main_toc'
-        
+
         tocs = list(body.select(toc_selector))
         if not tocs:
             msg = 'Cannot find any element of type %r to put TOC inside.' % toc_selector
@@ -933,4 +934,3 @@ def generate_and_add_toc(soup, toc_selector='div#toc'):
         else:
             toc_place = tocs[0]
             toc_place.replaceWith(toc_ul)
-            
