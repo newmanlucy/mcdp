@@ -60,7 +60,7 @@ def fix_header_id(header, globally_unique_id_part):
 def fix_ids_and_add_missing(soup, globally_unique_id_part):
     for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
         fix_header_id(h, globally_unique_id_part)
-            
+
 def get_things_to_index(soup):
     """
         nothing with attribute "notoc"
@@ -151,7 +151,7 @@ def generate_toc(soup, max_depth=None):
     number_items2(root)
     if False:
         logger.debug(toc_summary(root))
-# 
+#
 #     logger.debug('toc iterating')
 #     # iterate over chapters (below each h1)
 #     # XXX: this is parts
@@ -165,7 +165,7 @@ def generate_toc(soup, max_depth=None):
 #                 ul['class'] = 'toc chapter_toc'
 #                 # todo: add specific h1
 #                 item.tag.insert_after(ul)  # XXX: uses <fragment>
-# 
+#
 #     logger.debug('toc done iterating')
     exclude = ['subsub', 'fig', 'code', 'tab', 'par', 'subfig',
                 'appsubsub',
@@ -184,7 +184,7 @@ def toc_summary(root):
             display_name = display_name.replace('\n', ' ')
             display_name = display_name[:100]
         m = ('depth %s tag %s id %-30s %-20s %s %s  ' %
-             (item.depth, item.tag.name, item.id[:26], 
+             (item.depth, item.tag.name, item.id[:26],
               number, ' ' * 2 * item.depth, display_name))
         m = m + ' ' * (120 - len(m))
         s += '\n' + m
@@ -246,7 +246,7 @@ Label = namedtuple('Label', 'what number label_self')
 Style = namedtuple('Style', 'resets labels')
 
 def get_style_book():
-    
+
     resets = {
         'part': [],
         'sec': ['sub', 'subsub', 'par'],
@@ -268,7 +268,7 @@ def get_style_book():
         'prob': [],
         'thm': [],
     }
-    
+
     labels = {
         'part': Label('Part', '${part}', ''),
         'sec': Label('Chapter', '${sec}', ''),
@@ -316,7 +316,7 @@ def get_style_duckietown():
         'prob': [],
         'thm': [],
     }
-    
+
 
     labels = {
         'part': Label('Part', '${part|upper-alpha}', ''),
@@ -341,19 +341,19 @@ def get_style_duckietown():
         'exa': Label('Example', '${exa}', ''),
 
     }
-    
+
     return Style(resets, labels)
 
 def number_items2(root):
     counters = set(['part', 'app', 'sec', 'sub', 'subsub', 'appsub', 'appsubsub', 'par']
                    + ['fig', 'tab', 'subfig', 'code']
                    + ['exa', 'rem', 'lem', 'def', 'prop', 'prob', 'thm'])
-    
+
     style = get_style_book()
     style = get_style_duckietown()
     resets = style.resets
     labels = style.labels
-    
+
     for c in counters:
         assert c in resets, c
         assert c in labels, c
@@ -430,20 +430,20 @@ def render(s, counter_state):
 
 def substituting_empty_links(soup, raise_errors=False):
     '''
-    
-    
+
+
         default style is [](#sec:systems)  "Chapter 10"
- 
-    
+
+
         You can also use "class":
-        
+
             <a href='#sec:name' class='only_number'></a>
-    
+
 
     '''
 
 #     logger.debug('substituting_empty_links')
-    
+
 #     n = 0
     for le in get_empty_links_to_fragment(soup):
         a = le.linker
@@ -455,7 +455,7 @@ def substituting_empty_links(soup, raise_errors=False):
 #                  (n, nerrors))
 
 
-        
+
 def sub_link(a, element_id, element, raise_errors):
     """
         a: the link with href= #element_id
@@ -477,7 +477,7 @@ def sub_link(a, element_id, element, raise_errors):
 #         new_href = '#' + le.eid
 #         a.attrs['href'] = new_href
 #         logger.info('setting new href= %s' % (new_href))
-        
+
     if (not LABEL_WHAT_NUMBER in element.attrs) or \
             (not LABEL_NAME in element.attrs):
         msg = ('substituting_empty_links: Could not find attributes %s or %s in %s' %
@@ -491,17 +491,17 @@ def sub_link(a, element_id, element, raise_errors):
             if raise_errors:
                 raise ValueError(msg)
         return
-    
+
     label_what_number = element.attrs[LABEL_WHAT_NUMBER]
     label_number = element.attrs[LABEL_NUMBER]
     label_what = element.attrs[LABEL_WHAT]
     label_name = element.attrs[LABEL_NAME]
-    
+
     classes = list(a.attrs.get('class', [])) # bug: I was modifying
-    
+
 #     if le.query is not None:
 #         classes.append(le.query)
-    
+
     if 'toc_link' in classes:
         s = Tag(name='span')
         s.string = label_what
@@ -527,7 +527,7 @@ def sub_link(a, element_id, element, raise_errors):
                 br.replaceWith(NavigableString(' '))
             for _ in contents.findAll('a'):
                 _.extract()
-            
+
             contents.name = 'span'
             add_class(contents, 'toc_name')
             a.append(contents)
@@ -545,7 +545,7 @@ def sub_link(a, element_id, element, raise_errors):
             a.append(s)
 
     else:
-         
+
         if CLASS_ONLY_NUMBER in classes:
             label = label_number
         elif CLASS_NUMBER_NAME in classes:
@@ -566,8 +566,8 @@ def sub_link(a, element_id, element, raise_errors):
         assert frag.name == 'fragment'
         frag.name = 'span'
         add_class(frag, 'reflabel')
-        a.append(frag) 
-       
+        a.append(frag)
+
 
 LinkElement = namedtuple('LinkElement', 'linker eid linked query')
 
@@ -594,15 +594,15 @@ def get_empty_links_to_fragment(soup):
     logger.debug('building index done')
 
     for element in soup.find_all('a'):
-    
+
 #         logger.debug('get_empty_links_to_fragment link: %s %s' % (element, empty))
-        
+
         if not is_empty_link(element):
-            continue 
-        
+            continue
+
         if not 'href' in element.attrs:
             continue
-        
+
         href = element.attrs['href']
         if href.startswith('#'):
             rest = href[1:]
