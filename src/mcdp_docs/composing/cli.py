@@ -1,30 +1,35 @@
-from quickapp.quick_app_base import QuickAppBase
-import copy
-import yaml
-from contracts.utils import check_isinstance, raise_wrapped
-from mcdp_docs.composing.recipes import Recipe, RecipeContext, append_all
-from mcdp_utils_xml.parsing import bs_entire_document
-from bs4.element import Tag
-from mcdp_utils_misc.fileutils import write_data_to_file
 from contracts import contract
-from decent_params.utils.script_utils import UserError
+import copy
+from mcdp import logger
+from mcdp import logger
+from mcdp_docs.add_edit_links import add_github_links_if_edit_url
+from mcdp_docs.composing.recipes import Recipe, RecipeContext, append_all
+from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.manual_join_imp import generate_and_add_toc,\
     document_final_pass_after_toc
 from mcdp_docs.tocs import get_ids_from_soup, is_empty_link
+from mcdp_utils_misc.fileutils import write_data_to_file
 from mcdp_utils_xml.add_class_and_style import add_class
+from mcdp_utils_xml.parsing import bs_entire_document
 
-from mcdp_docs.manual_constants import MCDPManualConstants
-from mcdp_docs.add_edit_links import add_github_links_if_edit_url
+from bs4.element import Tag
+from contracts.utils import check_isinstance, raise_wrapped
+from decent_params.utils.script_utils import UserError
+from quickapp.quick_app_base import QuickAppBase
+import yaml
+
 
 class ComposeConfig():
     @contract(recipe=Recipe, input_=str, output=str)
-    def __init__(self, recipe, input_, output, purl_prefix):
+    def __init__(self, recipe, input_, output, purl_prefix, remove_status):
         check_isinstance(output, str)
         check_isinstance(input_, str)
         self.recipe = recipe
         self.input = input_
         self.output = output
         self.purl_prefix = purl_prefix
+        self.remove_status = remove_status
+        
     @staticmethod
     def from_yaml(data):
         """
@@ -39,13 +44,19 @@ class ComposeConfig():
         output = data.pop('output')
         recipe = data.pop('recipe')
         purl_prefix = data.pop('purl_prefix')
+        remove_status = data.pop('remove_status', [])
+        if not isinstance(remove_status, list):
+            msg = 'I expected that remove_status was a list; found %r.' % remove_status
+            raise ValueError(msg)
+        
+        
         recipe = Recipe.from_yaml(recipe)
         
         if data:
             msg = 'Spurious fields %s' % list(data)
             raise ValueError(msg) 
         
-        return ComposeConfig(recipe, input_, output, purl_prefix)
+        return ComposeConfig(recipe, input_, output, purl_prefix, remove_status)
         
 class Compose(QuickAppBase):
     """ """
@@ -83,6 +94,20 @@ def go(compose_config):
     check_isinstance(elements, list)
     append_all(body, elements)
     
+    # Now remove stuff
+    for status in compose_config.remove_status:
+        removed = []
+        for section in list(body.select('section[status=%s]' % status)):
+            removed.append(section.attrs['id'])
+            section.extract()
+        if not removed:
+            logger.info('Found no section with status = %r to remove.' % status)
+        else:
+            logger.info('I removed %d sections with status %r.' % (len(removed), status))
+            logger.debug('Removed: %s' % ", ".join(removed))
+            
+             
+    
     add_github_links_if_edit_url(doc, permalink_prefix=permalink_prefix)
     
     generate_and_add_toc(doc)
@@ -97,7 +122,6 @@ def go(compose_config):
     results = str(doc)
     write_data_to_file(results, output)
     
-from mcdp import logger
 
 def find_links_from_master(master_soup, version_soup, raise_errors):
     logger.info('find_links_from_master')

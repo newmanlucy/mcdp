@@ -21,6 +21,7 @@ from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER, \
 
 
 
+
 def get_manual_css_frag():
     """ Returns fragment of doc with CSS, either inline or linked,
         depending on MCDPConstants.manual_link_css_instead_of_including. """
@@ -721,12 +722,20 @@ def reorganize_by_subsection(section):
     return res
 
 def copy_attributes_from_header(section, header):
+    """
+        Note that for section, if header is "sec:Blah",
+        we give the id "blah:section", so it's easier to link to it.
+    """
     assert section.name == 'section'
     if not 'id' in header.attrs:
         msg = 'This header has no ID'
         msg += '\n' + str(header)
         raise Exception(msg)
-    section.attrs['id'] = header.attrs['id'] + ':section'
+    
+    from mcdp_docs.composing.cli import remove_prefix
+    pure_id = remove_prefix(header.attrs['id'])
+    
+    section.attrs['id'] = pure_id + ':section'
     for c in header.attrs.get('class', []):
         add_class(section, c)
     for a in ['status', 'lang', 'type']:
