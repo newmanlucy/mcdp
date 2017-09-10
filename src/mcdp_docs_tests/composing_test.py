@@ -8,6 +8,8 @@ from mcdp_utils_xml.parsing import bs_entire_document
 import os
 
 import yaml
+from git.repo.base import Repo
+from mcdp_utils_misc.fileutils import write_data_to_file
 
 
 @comptest
@@ -98,13 +100,25 @@ book.version.yaml: |
           contents:
           - add: sa
     output: dist/version/book.html
+    purl_prefix: http://purl.org/dt/fall2017/
 
 .compmake.rc:
     config echo 1
     
 """
-
-    with with_dir_content(data1):
+    use = '/tmp/composing1'
+        
+    with with_dir_content(data1, use_dir=use):
+        
+        repo = Repo.init('.')
+        fn = 'readme'
+        write_data_to_file('', fn)
+        repo.index.add([fn])
+        repo.index.commit("initial commit")
+        
+        url = 'git@github.com:AndreaCensi/example.git'
+        repo.create_remote('origin', url)
+        
         res = 'dist/master/book.html'
         run_app(RenderManual,  [ 
                 '--src','docs',

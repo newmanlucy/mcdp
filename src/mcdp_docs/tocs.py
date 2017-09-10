@@ -25,7 +25,7 @@ class GlobalCounter:
     header_id = 1
 
 
-def fix_header_id(header):
+def fix_header_id(header, globally_unique_id_part):
     ID = header.get('id', None)
     prefix = None if (ID is None or not ':' in ID) else ID[:ID.index(':')]
 
@@ -41,7 +41,7 @@ def fix_header_id(header):
         default_prefix = allowed_prefixes[0]
 
         if ID is None:
-            header['id'] = '%s:%s' % (default_prefix, GlobalCounter.header_id)
+            header['id'] = '%s:%s-%s' % (default_prefix, globally_unique_id_part, GlobalCounter.header_id)
             GlobalCounter.header_id += 1
         else:
             if prefix is None:
@@ -57,7 +57,10 @@ def fix_header_id(header):
                     logger.error(msg)
                     header.insert_after(Comment('Error: ' + msg))
 
-
+def fix_ids_and_add_missing(soup, globally_unique_id_part):
+    for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
+        fix_header_id(h, globally_unique_id_part)
+            
 def get_things_to_index(soup):
     """
         nothing with attribute "notoc"
@@ -75,7 +78,7 @@ def get_things_to_index(soup):
             continue
 
         if h.name in ['h1', 'h2', 'h3', 'h4']:
-            fix_header_id(h)
+#             fix_header_id(h)
             h_id = h.attrs['id']
             if h.name == 'h1':
                 if h_id.startswith('part:'):

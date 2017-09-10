@@ -31,7 +31,8 @@ def get_source_info(filename):
     path = filename
     try:
         commit = repo.iter_commits(paths=path, max_count=1).next()
-    except StopIteration:
+    except (StopIteration, ValueError) as e:
+        # ValueError: Reference at 'refs/heads/master' does not exist
         return None
     author = commit.author
     last_modified = time.gmtime(commit.committed_date) 

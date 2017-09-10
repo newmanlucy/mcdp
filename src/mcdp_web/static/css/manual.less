@@ -1102,3 +1102,47 @@ a.link-to-master {
     // outline: solid 1px orange;
     // padding: 2px;
 }
+
+@color-draft: red;
+@color-beta: orange;
+@color-to-update: blue;
+
+section[status=draft]::before {
+    content: 'This section is marked as draft';
+    color: @color-draft;
+    display: block;
+    text-align: right;
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+section[status=draft] {
+    border-right: solid 1em fade(@color-draft, 20%);
+}
+
+section[status=beta]::before {
+    content: 'This section is marked as beta';
+    color: @color-beta;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+section[status=beta] {
+    border-right: solid 1em fade(@color-beta, 20%);
+}
+
+
+section[status=to-update]::before {
+    content: 'This section is marked as needing an update';
+    color: @color-to-update;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+section[status=to-update] {
+    border-right: solid 1em fade(@color-to-update, 20%);
+}

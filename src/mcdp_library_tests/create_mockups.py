@@ -7,6 +7,7 @@ from contracts.utils import check_isinstance
 import shutil
 from mcdp import logger
 from contextlib import contextmanager
+import warnings
 
 __all__ = ['create_hierarchy']
 
@@ -30,14 +31,15 @@ def create_hierarchy(files0):
     """
     
     mcdp_tmp_dir = get_mcdp_tmp_dir()
-    prefix = 'mcdp_library_tests_create_hierarchy'
+    prefix = 'create_hierarchy'
     d = tempfile.mkdtemp(dir=mcdp_tmp_dir, prefix=prefix)
-    
-    if True:
-        d = '/tmp/create_hierarchy'
-        remove_tree_contents(d)
-        logger.warning("using tmp dir " + d)
-        
+#     
+#     if True:
+#         warnings.warn('Remove from production')
+#         d = '/tmp/create_hierarchy'
+#         remove_tree_contents(d)
+#         logger.warning("using tmp dir " + d)
+#         
     write_hierarchy(d, files0)
     return d
 
@@ -112,7 +114,7 @@ def mockup_add_prefix(prefix, d):
     return res
 
 @contextmanager
-def with_dir_content(data):
+def with_dir_content(data, use_dir=None):
     """
         data = str -> YAML folder structure
         
@@ -121,7 +123,15 @@ def with_dir_content(data):
                 contents of f1
     """
     import yaml
-    d = create_hierarchy(mockup_flatten(yaml.load(data)))
+    files = mockup_flatten(yaml.load(data))
+    
+    if use_dir is not None:
+        remove_tree_contents(use_dir)
+        write_hierarchy(use_dir, files)
+        d = use_dir
+    else:
+        d = create_hierarchy(files)
+        
     d0 = os.getcwd()
     os.chdir(d)
     try: 

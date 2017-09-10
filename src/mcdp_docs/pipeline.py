@@ -22,6 +22,9 @@ from .videos import make_videos
 from getpass import getuser
 from mcdp_docs.syntax_highlight import syntax_highlighting, strip_pre
 from mcdp.constants import MCDPConstants
+from mcdp_docs.status import check_status_codes, check_lang_codes
+from mcdp_utils_misc.string_utils import get_md5
+from mcdp_docs.tocs import fix_ids_and_add_missing
 
 
 __all__ = [
@@ -41,6 +44,7 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
         
         filter_soup(library, soup)
     """
+    s0= s
     raise_missing_image_errors = raise_errors
     raise_missing_image_errors = False
     from .latex.latex_preprocess import extract_maths, extract_tabular
@@ -188,6 +192,12 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     
     strip_pre(soup)
     syntax_highlighting(soup)
+    check_status_codes(soup)
+    check_lang_codes(soup)
+    
+    # Fixes the IDs (adding 'sec:'); add IDs to missing ones
+    globally_unique_id_part = 'autoid-' + get_md5(s0)[:5]
+    fix_ids_and_add_missing(soup, globally_unique_id_part)
     
     s = to_html_stripping_fragment(soup)
     s = replace_macros(s)    

@@ -1,8 +1,7 @@
 from mcdp.logs import logger
-from mcdp_utils_xml.add_class_and_style import add_class
 from mcdp_utils_xml.note_errors_inline import note_error2, note_warning2
 
-from bs4.element import Comment, Tag
+from bs4.element import Comment
 
 
 show_debug_message_for_corrected_links = False
@@ -28,11 +27,12 @@ def get_id2element(soup, att):
             duplicates.add(ID)
             other = id2element[ID]
             for e0 in [element, other]:
-                if not 'errored' in e0.attrs.get('class', ''):
-                    add_class(e0, 'errored')
-                    w = Tag(name='span', attrs={'class':'duplicated-id'})
-                    w.string = 'More than one element with id %r.' % ID
-                    e0.insert_after(w)
+#                 if not 'errored' in e0.attrs.get('class', ''):
+                    note_error2(e0, 'Naming', 'More than one element with id %r.' % ID)
+#                     add_class(e0, 'errored')
+#                     w = Tag(name='span', attrs={'class':'duplicated-id'})
+#                     w.string = 
+#                     e0.insert_after(w)
         id2element[element[att]] = element
         
     if duplicates:

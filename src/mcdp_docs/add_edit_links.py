@@ -6,8 +6,11 @@ from bs4.element import Tag
 
 from .logs import logger
 
-def add_github_links_if_edit_url(soup):
-    """ If an element has an attribute 'github-edit-url' then add little icons """
+def add_github_links_if_edit_url(soup, permalink_prefix='http://purl.org/dth/'):
+    """ 
+        If an element has an attribute 'github-edit-url' then add little icons.
+    
+    """
     attname = 'github-edit-url'
     nfound = 0
     for h in soup.findAll(['h1','h2','h3','h4'], attrs={attname: True}):
@@ -25,7 +28,7 @@ def add_github_links_if_edit_url(soup):
         if hid is not None:
             if ':' in hid:
                 hid = hid[hid.index(':')+1:]
-            url = 'http://purl.org/dth/%s' % hid
+            url = permalink_prefix + str(hid)
             a.attrs['href'] = url
             a.string = '🔗'
             a.attrs['class'] = 'purl-link'

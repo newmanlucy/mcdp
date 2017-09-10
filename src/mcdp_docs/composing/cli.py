@@ -10,21 +10,21 @@ from contracts import contract
 from decent_params.utils.script_utils import UserError
 from mcdp_docs.manual_join_imp import generate_and_add_toc,\
     document_final_pass_after_toc
-from mcdp_docs.tocs import substituting_empty_links, get_empty_links_to_fragment,\
-    get_ids_from_soup, is_empty_link
+from mcdp_docs.tocs import get_ids_from_soup, is_empty_link
 from mcdp_utils_xml.add_class_and_style import add_class
-from mcdp.constants import MCDPConstants
+
 from mcdp_docs.manual_constants import MCDPManualConstants
+from mcdp_docs.add_edit_links import add_github_links_if_edit_url
 
 class ComposeConfig():
     @contract(recipe=Recipe, input_=str, output=str)
-    def __init__(self, recipe, input_, output):
+    def __init__(self, recipe, input_, output, purl_prefix):
         check_isinstance(output, str)
         check_isinstance(input_, str)
         self.recipe = recipe
         self.input = input_
         self.output = output
-        
+        self.purl_prefix = purl_prefix
     @staticmethod
     def from_yaml(data):
         """
@@ -38,13 +38,14 @@ class ComposeConfig():
         input_ = data.pop('input')
         output = data.pop('output')
         recipe = data.pop('recipe')
+        purl_prefix = data.pop('purl_prefix')
         recipe = Recipe.from_yaml(recipe)
         
         if data:
             msg = 'Spurious fields %s' % list(data)
             raise ValueError(msg) 
         
-        return ComposeConfig(recipe, input_, output)
+        return ComposeConfig(recipe, input_, output, purl_prefix)
         
 class Compose(QuickAppBase):
     """ """
@@ -69,6 +70,8 @@ def go(compose_config):
     input_ = compose_config.input
     output = compose_config.output
     recipe = compose_config.recipe
+    permalink_prefix = compose_config.purl_prefix
+    
     # Read input file
     data = open(input_).read()
     soup = bs_entire_document(data)
@@ -76,15 +79,15 @@ def go(compose_config):
     doc = soup.__copy__()
     body = Tag(name='body')
     doc.body.replace_with(body)
-    m = recipe.make(RecipeContext(soup=soup))
-    check_isinstance(m, list)
-    append_all(body, m)
+    elements = recipe.make(RecipeContext(soup=soup))
+    check_isinstance(elements, list)
+    append_all(body, elements)
+    
+    add_github_links_if_edit_url(doc, permalink_prefix=permalink_prefix)
+    
     generate_and_add_toc(doc)
     doc = doc.__copy__()
     
-    # Generate the names for the soup
-#     soup = soup.__copy__()
-
 #     generate_and_add_toc(soup)
 #     substituting_empty_links(soup)
     raise_errors = False
@@ -114,7 +117,6 @@ def find_links_from_master(master_soup, version_soup, raise_errors):
                 logger.info('found %s in master' % eid)
                 linked_element = master_ids[eid]
                 if is_empty_link(a):
-#                     a.attrs['class'] = 
                     add_class(a, MCDPManualConstants.CLASS_ONLY_NAME)
                     sub_link(a, eid, linked_element, raise_errors)
                 

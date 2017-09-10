@@ -392,8 +392,7 @@ def dissolve(x):
     for child in list(x.contents):
         child.extract()
         x.parent.insert(index, child)
-        index += 1
-#         x.insert_before(child)
+        index += 1 
 
     x.extract()
 
@@ -612,14 +611,6 @@ def update_refs_(filename, contents, id2filename):
             logger.error('update_ref() for %r: no element with ID "%s".' % (filename, id_))
 
 
-# def write_split_files(filename2contents, d):
-#     if not os.path.exists(d):
-#         os.makedirs(d)
-#     for filename, contents in filename2contents.items():
-#         fn = os.path.join(d, filename)
-#         with open(fn, 'w') as f:
-#             f.write(str(contents))
-#         logger.info('written section to %s' % fn)
 
 def tag_like(t):
     t2 = Tag(name=t.name)
@@ -731,10 +722,16 @@ def reorganize_by_subsection(section):
 
 def copy_attributes_from_header(section, header):
     assert section.name == 'section'
-    section.attrs['id'] = header.attrs.get('id', 'unnamed-h1') + ':section'
+    if not 'id' in header.attrs:
+        msg = 'This header has no ID'
+        msg += '\n' + str(header)
+        raise Exception(msg)
+    section.attrs['id'] = header.attrs['id'] + ':section'
     for c in header.attrs.get('class', []):
         add_class(section, c)
-
+    for a in ['status', 'lang', 'type']:
+        if a in header.attrs:
+            section.attrs[a] = header.attrs[a] 
 
 def make_sections2(elements, is_marker, copy=True, element_name='div', attrs={},
                    add_debug_comments=False):

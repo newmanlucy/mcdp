@@ -2067,6 +2067,42 @@ a.link-to-master::after {
   text-decoration: none;
   font-size: 80%;
 }
+section[status=draft]::before {
+  content: 'This section is marked as draft';
+  color: red;
+  display: block;
+  text-align: right;
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  padding-right: 0.5em;
+}
+section[status=draft] {
+  border-right: solid 1em rgba(255, 0, 0, 0.2);
+}
+section[status=beta]::before {
+  content: 'This section is marked as beta';
+  color: orange;
+  margin-top: 0.5em;
+  display: block;
+  text-align: right;
+  padding-top: 0.5em;
+  padding-right: 0.5em;
+}
+section[status=beta] {
+  border-right: solid 1em rgba(255, 165, 0, 0.2);
+}
+section[status=to-update]::before {
+  content: 'This section is marked as needing an update';
+  color: blue;
+  margin-top: 0.5em;
+  display: block;
+  text-align: right;
+  padding-top: 0.5em;
+  padding-right: 0.5em;
+}
+section[status=to-update] {
+  border-right: solid 1em rgba(0, 0, 255, 0.2);
+}
 /* These are the fixes for printing / prince */
 body {
   page: normal;
