@@ -144,12 +144,12 @@ class Split(QuickApp):
 
         if preamble:
             preamble = open(preamble).read()
+            
+        ids_to_use = []
         for k in list(id2filename):
-            if 'autoid' in k:
-                del id2filename[k]
-        #print id2filename
-        ids = sorted(id2filename)
-        data = "".join(id2filename[_] for _ in ids)
+            if not 'autoid' in k:
+                ids_to_use.append(k)
+        data = "".join(id2filename[_] for _ in ids_to_use)
         links_hash = get_md5(data)[:8]
         
         if self.options.faster_but_imprecise:

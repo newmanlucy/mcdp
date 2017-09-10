@@ -84,7 +84,7 @@ def check_if_any_href_is_invalid(soup):
                 
 #             logger.debug('check_if_any_href_is_invalid: not found %r, core %r' % (ID, core))
             
-            possible = ['sec', 'sub', 'subsub', 'fig', 'tab', 'code', 'app', 'appsub',
+            possible = ['part', 'sec', 'sub', 'subsub', 'fig', 'tab', 'code', 'app', 'appsub',
                         'appsubsub',
                         'def', 'eq', 'rem', 'lem', 'prob', 'prop', 'exa', 'thm' ]
             matches = [] 

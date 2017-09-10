@@ -4,12 +4,12 @@ from mcdp_docs.composing.recipes import Recipe
 from mcdp_docs.mcdp_render_manual import RenderManual
 from mcdp_docs.split import Split
 from mcdp_library_tests.create_mockups import with_dir_content
-from mcdp_utils_xml.parsing import bs_entire_document
+from mcdp_utils_misc import write_data_to_file
+from mcdp_utils_xml import bs_entire_document
 import os
 
-import yaml
 from git.repo.base import Repo
-from mcdp_utils_misc.fileutils import write_data_to_file
+import yaml
 
 
 @comptest
@@ -52,9 +52,10 @@ docs:
         
         Linking to:
         
-        - <a href="#sa" class="number_name"></a>
-        - <a href="#sb" class="number_name"></a>
-        - <a href="#sc" class="number_name"></a>
+        - (number name) <a href="#sa" class="number_name"></a>; (empty) [](#sa)
+        - (number name) <a href="#sb" class="number_name"></a>; (empty) [](#sb)
+        - (number name) <a href="#sc" class="number_name"></a>; (empty) [](#sc)
+        - And linking to [](#elephant).
     
     file2.md: |
     
@@ -64,25 +65,27 @@ docs:
         
         Linking to:
 
-        - <a href="#sa" class="number_name"></a>
-        - <a href="#sb" class="number_name"></a>
-        - <a href="#sc" class="number_name"></a>
+        - (number name) <a href="#sa" class="number_name"></a>; (empty) [](#sa)
+        - (number name) <a href="#sb" class="number_name"></a>; (empty) [](#sb)
+        - (number name) <a href="#sc" class="number_name"></a>; (empty) [](#sc)
+        - And linking to [](#elephant).
         
         # Elephant {#elephant status=draft}
         
         Section Elephant is not ready.
+        
 
     file3.md: |
     
-        # Cat {#sc}
+        # The cat section {#sc}
         
         This is section Cat. 
         
         Linking to:
 
-        - <a href="#sa" class="number_name"></a>
-        - <a href="#sb" class="number_name"></a>
-        - <a href="#sc" class="number_name"></a>
+        - (number name) <a href="#sa" class="number_name"></a>; (empty) [](#sa)
+        - (number name) <a href="#sb" class="number_name"></a>; (empty) [](#sb)
+        - (number name) <a href="#sc" class="number_name"></a>; (empty) [](#sc)
         
     00_main_template.html: |
         

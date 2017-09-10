@@ -9,7 +9,7 @@ from mcdp_docs.manual_join_imp import generate_and_add_toc,\
     document_final_pass_after_toc
 from mcdp_docs.tocs import get_ids_from_soup, is_empty_link
 from mcdp_utils_misc.fileutils import write_data_to_file
-from mcdp_utils_xml.add_class_and_style import add_class
+from mcdp_utils_xml.add_class_and_style import add_class, get_classes
 from mcdp_utils_xml.parsing import bs_entire_document
 
 from bs4.element import Tag
@@ -141,8 +141,12 @@ def find_links_from_master(master_soup, version_soup, raise_errors):
                 logger.info('found %s in master' % eid)
                 linked_element = master_ids[eid]
                 if is_empty_link(a):
-                    add_class(a, MCDPManualConstants.CLASS_ONLY_NAME)
+#                     logger.debug('is: %s' % a)
+                    if not get_classes(a):
+                        add_class(a, MCDPManualConstants.CLASS_ONLY_NAME)
+#                     logger.debug('is before: %s' % a)
                     sub_link(a, eid, linked_element, raise_errors)
+#                     logger.debug('is now: %s' % a)
                 
                 href = 'http://purl.org/dth/%s' % remove_prefix(eid)
                 
