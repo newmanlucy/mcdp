@@ -113,6 +113,7 @@ class Split(QuickApp):
         params.add_flag('disqus')
         params.add_flag('mathjax')
         params.add_string('preamble', default=None)
+        params.add_flag('faster_but_imprecise')
         
     def define_jobs_context(self, context):
         ifilename = self.options.filename
@@ -143,11 +144,16 @@ class Split(QuickApp):
 
         if preamble:
             preamble = open(preamble).read()
-            
+        for k in list(id2filename):
+            if 'autoid' in k:
+                del id2filename[k]
+        #print id2filename
         ids = sorted(id2filename)
         data = "".join(id2filename[_] for _ in ids)
         links_hash = get_md5(data)[:8]
         
+        if self.options.faster_but_imprecise:
+            links_hash = "nohash"
         
         for filename, contents in filename2contents.items():
             contents_hash = get_md5(str(contents) + str(preamble))[:8]

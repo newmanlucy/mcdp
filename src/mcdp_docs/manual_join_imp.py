@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 from collections import OrderedDict, namedtuple
 from contracts import contract
-import json, os
+import json
 from mcdp.logs import logger
 from mcdp_utils_xml import add_class, bs
 import sys
