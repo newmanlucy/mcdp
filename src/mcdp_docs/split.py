@@ -1,20 +1,21 @@
 from contextlib import contextmanager
 import logging
-from mcdp import logger
-from mcdp_docs.add_mathjax import add_mathjax_call, add_mathjax_preamble
-from mcdp_docs.manual_join_imp import update_refs_
-from mcdp_utils_misc.string_utils import get_md5
-from mcdp_utils_xml import bs
 import os
 import time
- 
+
 from bs4.element import Tag
 from quickapp import QuickApp
 
+from mcdp import logger
+from mcdp_utils_misc import get_md5
+from mcdp_utils_misc import write_data_to_file
+from mcdp_utils_xml import bs
+from mcdp_utils_xml import bs_entire_document
+
+from .add_mathjax import add_mathjax_call, add_mathjax_preamble
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
+from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
-from mcdp_utils_xml.parsing import bs_entire_document
-from mcdp_utils_misc.fileutils import write_data_to_file
 
 
 show_timing = False
@@ -124,7 +125,7 @@ class Split(QuickApp):
         
         html = open(ifilename).read()
         soup = bs_entire_document(html)
-#         soup = BeautifulSoup(html, 'lxml', from_encoding='utf-8')
+
         body = soup.html.body
         filename2contents = split_in_files(body)
         
