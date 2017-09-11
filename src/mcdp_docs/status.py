@@ -29,7 +29,8 @@ def check_status_codes(soup, realpath):
                 msg += '\n' + indent(str(h), '  ')
                 note_error2(h, 'syntax error', msg)
         else:
-            if h.name == 'h1':
+            # Only warn for h1 that are not part:
+            if h.name == 'h1' and not 'part:' in h.attrs.get('id',''):
                 if not 'catkin_ws' in realpath:
                     # let's not worry about the Software repo for now
                     h2 = h.__copy__()
