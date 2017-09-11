@@ -20,7 +20,7 @@ import yaml
 
 class ComposeConfig():
     @contract(recipe=Recipe, input_=str, output=str)
-    def __init__(self, recipe, input_, output, purl_prefix, remove_status):
+    def __init__(self, recipe, input_, output, purl_prefix, remove_status, show_removed):
         check_isinstance(output, str)
         check_isinstance(input_, str)
         self.recipe = recipe
@@ -28,6 +28,7 @@ class ComposeConfig():
         self.output = output
         self.purl_prefix = purl_prefix
         self.remove_status = remove_status
+        self.show_removed = show_removed
         
     @staticmethod
     def from_yaml(data):
@@ -44,6 +45,7 @@ class ComposeConfig():
         recipe = data.pop('recipe')
         purl_prefix = data.pop('purl_prefix')
         remove_status = data.pop('remove_status', [])
+        show_removed = data.pop('show_removed', True)
         if not isinstance(remove_status, list):
             msg = 'I expected that remove_status was a list; found %r.' % remove_status
             raise ValueError(msg)
@@ -55,7 +57,7 @@ class ComposeConfig():
             msg = 'Spurious fields %s' % list(data)
             raise ValueError(msg) 
         
-        return ComposeConfig(recipe, input_, output, purl_prefix, remove_status)
+        return ComposeConfig(recipe, input_, output, purl_prefix, remove_status, show_removed)
         
 class Compose(QuickAppBase):
     """ """
@@ -102,23 +104,31 @@ def go(compose_config):
             pure_id = section_id.replace(':section', '')
             removed.append(section.attrs['id'])
             
-            # remove everything that is not a header
-            keep = ['h1','h2','h3','h4','h5']
-            for e in list(section.children):
-                if e.name not in keep:
-                    e.extract()
-                else:
-                    e.append(' [%s]' % status)
-            
-            p = Tag(name='p')
-            p.append("This section has been removed because it is in status %r. " % (status))
-            a = Tag(name='a')
-            a.attrs['href'] = 'http://purl.org/dt/master/%s' % pure_id 
-            a.append("If you are feeling adventurous, you can read it on master.")
-            p.append(a)
-            
-            section.append(p)
-#             section.extract()
+            if compose_config.show_removed:
+                # remove everything that is not a header
+                keep = ['h1','h2','h3','h4','h5']
+                for e in list(section.children):
+                    if e.name not in keep:
+                        e.extract()
+                    else:
+                        e.append(' [%s]' % status)
+                
+                p = Tag(name='p')
+                p.append("This section has been removed because it is in status %r. " % (status))
+                a = Tag(name='a')
+                a.attrs['href'] = 'http://purl.org/dt/master/%s' % pure_id 
+                a.append("If you are feeling adventurous, you can read it on master.")
+                p.append(a)
+                
+                section.append(p)
+                
+                p = Tag(name='p')
+                p.append("To disable this behavior, and completely hide the sections, ")
+                p.append("set the parameter show_removed to false in fall2017.version.yaml.")
+                section.append(p)
+            else:
+                section.extract()
+                
 #             section.replace_with(div)
             
             
