@@ -100,6 +100,10 @@ def go(compose_config):
     for status in compose_config.remove_status:
         removed = []
         for section in list(body.select('section[status=%s]' % status)):
+            level = section.attrs['level']
+            if not level in ['sec', 'part']:
+                continue
+            
             section_id = section.attrs['id']
             pure_id = section_id.replace(':section', '')
             removed.append(section.attrs['id'])

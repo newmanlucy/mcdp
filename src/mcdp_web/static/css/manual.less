@@ -1109,6 +1109,8 @@ a.link-to-master {
 @color-draft: red;
 @color-beta: orange;
 @color-to-update: blue;
+@color-unknown: gray;
+@color-deprecated: purple;
 
 section[status=draft]::before {
     content: 'This section is marked as draft';
@@ -1148,4 +1150,31 @@ section[status=to-update]::before {
 }
 section[status=to-update] {
     border-right: solid 1em fade(@color-to-update, 20%);
+}
+
+section[status=unknown][level=sec]::before {
+    content: 'This section does not have a status set';
+    color: @color-unknown;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+section[status=to-update][level=sec] {
+    border-right: solid 1em fade(@color-unknown, 20%);
+}
+
+
+section[status=deprecated]::before {
+    content: 'This section is deprecated';
+    color: @color-deprecated;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+section[status=deprecated] {
+    border-right: solid 1em fade(@color-deprecated, 20%);
 }

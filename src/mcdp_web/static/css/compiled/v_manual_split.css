@@ -2106,6 +2106,30 @@ section[status=to-update]::before {
 section[status=to-update] {
   border-right: solid 1em rgba(0, 0, 255, 0.2);
 }
+section[status=unknown][level=sec]::before {
+  content: 'This section does not have a status set';
+  color: gray;
+  margin-top: 0.5em;
+  display: block;
+  text-align: right;
+  padding-top: 0.5em;
+  padding-right: 0.5em;
+}
+section[status=to-update][level=sec] {
+  border-right: solid 1em rgba(128, 128, 128, 0.2);
+}
+section[status=deprecated]::before {
+  content: 'This section is deprecated';
+  color: purple;
+  margin-top: 0.5em;
+  display: block;
+  text-align: right;
+  padding-top: 0.5em;
+  padding-right: 0.5em;
+}
+section[status=deprecated] {
+  border-right: solid 1em rgba(128, 0, 128, 0.2);
+}
 @media screen {
   body {
     display: inline-block;
