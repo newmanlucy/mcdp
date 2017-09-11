@@ -1,6 +1,10 @@
 from mcdp_utils_xml import add_class
 
 from bs4.element import Tag, NavigableString
+from contracts.utils import indent
+from mcdp.exceptions import DPSyntaxError
+from mcdp_lang_utils.where import Where
+from mcdp_lang_utils.where_utils import location
 
 
 def other_abbrevs(soup):
@@ -34,42 +38,83 @@ def other_abbrevs(soup):
     substitute_task_markers(soup)
     substitute_special_paragraphs(soup)
     
+prefix2class = {
+    'TODO: ': 'todo',
+    'TOWRITE: ': 'special-par-towrite',  
+    'Task: ': 'special-par-task',
+    'Remark: ': 'special-par-remark',  
+    'Note: ': 'special-par-note',
+    'Symptom: ': 'special-par-symptom',
+    'Resolution: ': 'special-par-resolution',
+    'Bad:': 'special-par-bad',
+    'Better:': 'special-par-better',
+    'Warning:': 'special-par-warning',
+    'Q:': 'special-par-question',
+    'A:': 'special-par-answer',
+    "Assigned: ": 'special-par-assigned',
+    "Author: ": 'special-par-author',
+    "Maintainer: ": 'special-par-maintainer',
+    "Point of contact: ": 'special-par-point-of-contact',
+    "Slack channel: ": 'special-par-slack-channel',
+    # Reference and See are the same thing
+    'See: ': 'special-par-see',
+    'Reference: ': 'special-par-see',
+    'Requires: ': 'special-par-requires',
+    'Results: ': 'special-par-results',
+    'Result: ': 'special-par-results',
+    'Next steps: ': 'special-par-next',
+    'Next Steps: ': 'special-par-next',
+    'Next: ': 'special-par-next',
+    'Recommended: ': 'special-par-recommended',
+    'See also: ': 'special-par-see-also',
     
-def substitute_special_paragraphs(soup):
-    prefix2class = {
-        'TODO: ': 'todo',
-        'TOWRITE: ': 'special-par-towrite',  
-        'Task: ': 'special-par-task',
-        'Remark: ': 'special-par-remark',  
-        'Note: ': 'special-par-note',
-        'Symptom: ': 'special-par-symptom',
-        'Resolution: ': 'special-par-resolution',
-        'Bad:': 'special-par-bad',
-        'Better:': 'special-par-better',
-        'Warning:': 'special-par-warning',
-        'Q:': 'special-par-question',
-        'A:': 'special-par-answer',
-        "Assigned: ": 'special-par-assigned',
-        "Author: ": 'special-par-author',
-        "Maintainer: ": 'special-par-maintainer',
-        "Point of contact: ": 'special-par-point-of-contact',
-        "Slack channel: ": 'special-par-slack-channel',
-        # Reference and See are the same thing
-        'See: ': 'special-par-see',
-        'Reference: ': 'special-par-see',
-        'Requires: ': 'special-par-requires',
-        'Results: ': 'special-par-results',
-        'Result: ': 'special-par-results',
-        'Next steps: ': 'special-par-next',
-        'Next Steps: ': 'special-par-next',
-        'Next: ': 'special-par-next',
-        'Recommended: ': 'special-par-recommended',
-        'See also: ': 'special-par-see-also',
+    'Comment: ': 'comment',
+    'Question: ': 'question',
+    'Doubt: ': 'doubt',
+} 
+def has_special_line_prefix(line):
+    for prefix in prefix2class:
+        if line.startswith(prefix):
+            return prefix
+    return None
+
+def check_good_use_of_special_paragraphs(md, filename):
+    lines = md.split('\n')
+    for i in range(1, len(lines)):
+        line = lines[i]
+        prev = lines[i-1]
         
-        'Comment: ': 'comment',
-        'Question: ': 'question',
-        'Doubt: ': 'doubt',
-    } 
+        prefix = has_special_line_prefix(line)        
+        if prefix:
+            if prev.strip():
+                msg = ('Wrong use of special paragraph indicator. You have '
+                       'to leave an empty line before the special paragraph.')
+                c  = location(i, 1, md)
+                c_end = c + len(prefix)
+                where = Where(md, c, c_end).with_filename(filename)
+                raise DPSyntaxError(msg, where=where)
+
+        if False:
+            def looks_like_list_item(s):
+                if s.startswith('--'):
+                    return False
+                if s.startswith('**'):
+                    return False
+                return s.startswith('-') or s.startswith('*')
+            
+            if looks_like_list_item(line):
+                if prev.strip() and not looks_like_list_item(prev):
+                    msg = ('Wrong use of list indicator. You have '
+                           'to leave an empty line before the list.')
+                    c  = location(i, 1, md)
+                    c_end = c + 1
+                    where = Where(md, c, c_end).with_filename(filename)
+                    raise DPSyntaxError(msg, where=where)
+                
+                
+
+def substitute_special_paragraphs(soup):
+    
     
     for prefix, klass in prefix2class.items():
         substitute_special_paragraph(soup, prefix, klass)

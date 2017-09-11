@@ -2067,6 +2067,9 @@ a.link-to-master::after {
   text-decoration: none;
   font-size: 80%;
 }
+code .link-to-master::after {
+  display: none;
+}
 section[status=draft]::before {
   content: 'This section is marked as draft';
   color: red;
