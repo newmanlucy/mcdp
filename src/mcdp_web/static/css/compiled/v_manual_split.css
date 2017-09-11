@@ -707,14 +707,14 @@ details.error {
 }
 details.warning {
   display: inline;
-  border: solid 1px yellow;
+  border: solid 1px orange;
   padding: 3px;
   font-size: 80%;
   margin-right: 2px;
   margin-left: 2px;
 }
 details.warning summary {
-  color: yellow;
+  color: orange;
 }
 pre.error,
 pre.DPSemanticError,
