@@ -155,8 +155,9 @@ class Split(QuickApp):
         
         if self.options.faster_but_imprecise:
             links_hash = "nohash"
-            
-        context.comp(remove_spurious, output_dir, list(filename2contents))
+        
+        if False:
+            context.comp(remove_spurious, output_dir, list(filename2contents))
         
         for filename, contents in filename2contents.items():
             contents_hash = get_md5(str(contents) + str(preamble))[:8]
