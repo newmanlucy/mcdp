@@ -17,10 +17,10 @@ def search_for_errors(soup):
     '''
     s = ''
     for element in soup.select('details.'+ERROR_CLASS):
-        summary = element.summary.text
+        summary = element.summary.text.encode('utf8')
         e2 = element.__copy__()
         e2.summary.extract()
-        other = e2.text
+        other = e2.text.encode('utf8')
         s0 = summary + '\n\n' + other
         s += '\n\n' + indent(s0, '', '* ')
     return s

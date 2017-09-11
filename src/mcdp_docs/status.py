@@ -1,15 +1,26 @@
-from mcdp_utils_xml.note_errors_inline import note_error2
+from mcdp_utils_xml.note_errors_inline import note_error2, note_warning2
 from contracts.utils import indent
+from collections import OrderedDict
 
 STATUS_ATTR = 'status'
-allowed_statuses = [ 'unknown', 'draft', 'beta', 'ready', 'to-update', 'deprecated']
+STATUS_UNKNOWN = 'unknown'
+
+allowed_statuses = OrderedDict()
+
+allowed_statuses[STATUS_UNKNOWN] = ''
+allowed_statuses['draft'] =  'This is a draft. Drafts are typically hidden from front-facing versions.'
+allowed_statuses['beta'] =  'This is ready for review.'
+
+allowed_statuses['ready'] =  'This is ready to be published.'
+allowed_statuses['to-update'] =  'This is out-of-date and needs a refresh.'
+allowed_statuses['deprecated'] =  'This part is deprecated and will be eventually deleted.'
 
 def all_headers(soup):
     headers = ['h1','h2','h3','h4','h5']
     for h in soup.find_all(headers):
         yield h
         
-def check_status_codes(soup):
+def check_status_codes(soup, realpath):
     for h in all_headers(soup):
         if STATUS_ATTR in h.attrs:
             s = h.attrs[STATUS_ATTR]
@@ -18,7 +29,22 @@ def check_status_codes(soup):
                 msg += '\n' + indent(str(h), '  ')
                 note_error2(h, 'syntax error', msg)
         else:
-            h.attrs[STATUS_ATTR] = 'unknown'
+            if h.name == 'h1':
+                if not 'catkin_ws' in realpath:
+                    # let's not worry about the Software repo for now
+                    h2 = h.__copy__()
+                    h2.attrs.pop('github-blob-url', None)
+                    h2.attrs.pop('github-edit-url', None)
+                    msg = 'Status not found for this header:\n\n  %s' % str(h2)
+                    msg += '\n\n in file %s' % realpath
+                    msg += '\n\nPlease set the status for all the top-level headers.'
+                    msg += '\n\nThe syntax is:\n\n      # My section    {#SECTIONID status=STATUS}'
+                    msg += '\n\nThese are the possible choices for the status:\n'
+                    for k, v in allowed_statuses.items():
+                        if k != STATUS_UNKNOWN:
+                            msg += '\n' + indent(v, '', '      -%25s   ' % ('status=%s'%k))
+                    note_warning2(h, 'missing status', msg)
+            h.attrs[STATUS_ATTR] = STATUS_UNKNOWN
                 
 
 LANG_ATTR = 'lang'

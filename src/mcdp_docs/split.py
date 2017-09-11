@@ -177,6 +177,7 @@ def remove_spurious(output_dir, filenames):
         if not f in filenames:
             fn = os.path.join(output_dir, f)
             msg = 'I found a spurious file from earlier compilations: %s' % fn
+            msg += '(%s not in %s) ' % (f, filenames)
             logger.warning(msg)
 
             if 'SPURIOUS' in open(fn).read():

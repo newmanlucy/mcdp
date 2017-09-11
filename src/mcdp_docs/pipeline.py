@@ -196,7 +196,7 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     
     strip_pre(soup)
     syntax_highlighting(soup)
-    check_status_codes(soup)
+    check_status_codes(soup, realpath)
     check_lang_codes(soup)
     
     # Fixes the IDs (adding 'sec:'); add IDs to missing ones
