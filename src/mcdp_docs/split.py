@@ -16,6 +16,7 @@ from .add_mathjax import add_mathjax_call, add_mathjax_preamble
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
+from mcdp_utils_xml.parsing import read_html_file
 
 
 show_timing = False
@@ -154,6 +155,8 @@ class Split(QuickApp):
         
         if self.options.faster_but_imprecise:
             links_hash = "nohash"
+            
+        context.comp(remove_spurious, output_dir, list(filename2contents))
         
         for filename, contents in filename2contents.items():
             contents_hash = get_md5(str(contents) + str(preamble))[:8]
@@ -164,4 +167,54 @@ class Split(QuickApp):
                          job_id=job_id)
 
 split_main = Split.get_sys_main()
+
+def remove_spurious(output_dir, filenames):
+    ignore = ['link.html']
+    found = os.listdir(output_dir)
+    for f in found:
+        if not f.endswith('.html'): continue
+        if f in ignore: continue
+        if not f in filenames:
+            fn = os.path.join(output_dir, f)
+            msg = 'I found a spurious file from earlier compilations: %s' % fn
+            logger.warning(msg)
+
+            if 'SPURIOUS' in open(fn).read():
+                # already marked as spurious
+                continue
+                        
+            soup = read_html_file(fn)
+            e = soup.find('section')
+            if e is not None and 'id' in e.attrs:
+                id_ = e.attrs['id'].replace(':section','')
+                from mcdp_docs.composing.cli import remove_prefix
+
+                id_ = remove_prefix(id_)
+                url = 'http://purl.org/dt/master/' + id_
+                OTHER = '<p>Maybe try this link to find the version on master (no guarantees): <a href="%s">%s</a></p>' % (url,url)
+                OTHER += '\n<p>If that does not work, the section was renamed.</p>'     
+            else:
+                OTHER = ''
+                
+            data = spurious.replace('OTHER', OTHER)
+#             print data
+            write_data_to_file(data, fn)
+            
+spurious = """
+<html>
+<head><title>Spurious file</title></head>
+<body> <!-- SPURIOUS -->
+
+<h2>Spurious file</h2>
+<p>This file is a spurious remain from earlier compilation.</p>
+
+<p>If you are reached this file, it means that somebody is not using PURLs 
+to link to parts of the duckiebook.</p>
+
+OTHER
+
+</body>
+</html>
+"""
+
 

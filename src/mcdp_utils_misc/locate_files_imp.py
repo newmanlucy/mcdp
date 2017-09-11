@@ -25,6 +25,8 @@ def locate_files(directory, pattern, followlinks=True,
     """
         pattern is either a string or a sequence of strings
         ignore_patterns = ['*.bak']
+        
+        normalize = uses realpath
     """
     t0 = time.time()
     if ignore_patterns is None:

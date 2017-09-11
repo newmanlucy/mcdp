@@ -57,3 +57,7 @@ def bs_entire_document(s):
 
 def to_html_entire_document(soup):
     return str(soup)
+
+def read_html_file(filename):
+    data = open(filename).read()
+    return bs_entire_document(data)
