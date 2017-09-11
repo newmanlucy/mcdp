@@ -619,9 +619,17 @@ def tag_like(t):
         t2.attrs[k] = v
     return t2
 
+def is_part_marker(x):
+    if not isinstance(x, Tag):
+        return False
+    if not x.name == 'h1':
+        return False
+    
+    id_ = x.attrs.get('id', '')
+    id_starts_with_part =  id_.startswith('part:')  
+    return id_starts_with_part
+
 def reorganize_by_parts(body):
-    def is_part_marker(x):
-        return isinstance(x, Tag) and x.name == 'h1' and 'part' in x.attrs.get('id', '')
     elements = body.contents
     sections = make_sections2(elements, is_part_marker, attrs={'level': 'part-down'})
     res = tag_like(body)

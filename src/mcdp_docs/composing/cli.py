@@ -98,8 +98,30 @@ def go(compose_config):
     for status in compose_config.remove_status:
         removed = []
         for section in list(body.select('section[status=%s]' % status)):
+            section_id = section.attrs['id']
+            pure_id = section_id.replace(':section', '')
             removed.append(section.attrs['id'])
-            section.extract()
+            
+            # remove everything that is not a header
+            keep = ['h1','h2','h3','h4','h5']
+            for e in list(section.children):
+                if e.name not in keep:
+                    e.extract()
+                else:
+                    e.append(' [%s]' % status)
+            
+            p = Tag(name='p')
+            p.append("This section has been removed because it is in status %r. " % (status))
+            a = Tag(name='a')
+            a.attrs['href'] = 'http://purl.org/dt/master/%s' % pure_id 
+            a.append("If you are feeling adventurous, you can read it on master.")
+            p.append(a)
+            
+            section.append(p)
+#             section.extract()
+#             section.replace_with(div)
+            
+            
         if not removed:
             logger.info('Found no section with status = %r to remove.' % status)
         else:

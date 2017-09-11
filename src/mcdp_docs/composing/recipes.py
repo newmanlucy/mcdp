@@ -1,13 +1,12 @@
 from abc import abstractmethod, ABCMeta
 import copy
 from mcdp import logger
-from mcdp.exceptions import DPSemanticError
-from mcdp_utils_xml.misc import soup_find_absolutely
+from mcdp_utils_xml import soup_find_absolutely
+from mcdp_utils_xml import note_error2
 
 from bs4.element import Tag
 from contracts.utils import raise_desc, check_isinstance, indent, raise_wrapped
 import yaml
-from mcdp_utils_xml.note_errors_inline import note_error2
 
 
 class RecipeContext():
@@ -65,13 +64,23 @@ class AddByID(Recipe):
             d.append(t)
             note_error2(t, 'ref error', msg)
             return [d]
-#             raise DPSemanticError(msg)
         logger.info('Adding section %r' %  e.attrs['id'])
-        return [e.__copy__()] 
+#         logger.info('e: ' + get_summary_of_section(e))
+        e_copy = e.__copy__()
+        
+#         logger.info('e_copy: ' + get_summary_of_section(e_copy))
+        
+        return [e_copy] 
     
     def __str__(self):
         return 'AddByID(%s)' % self.id_
-    
+# 
+# def get_summary_of_section(section):
+#     contains = []
+#     for s in section.select('section'): 
+#         contains.append(s.attrs.get('id', 'unnamed'))
+#     return "The subsections of %r are: %s" % (section.attrs['id'], ", ".join(contains)) 
+
 class MakePart(Recipe):
     tag = 'part'
     
