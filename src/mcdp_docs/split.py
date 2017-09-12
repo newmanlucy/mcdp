@@ -4,7 +4,6 @@ from mcdp import logger
 from mcdp_utils_misc import get_md5
 from mcdp_utils_misc import write_data_to_file
 from mcdp_utils_xml import bs
-from mcdp_utils_xml import bs_entire_document
 from mcdp_utils_xml.parsing import \
     read_html_doc_from_file
 import os
@@ -17,9 +16,10 @@ from .add_mathjax import add_mathjax_call, add_mathjax_preamble
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
+from mcdp_docs.extract_assets import extract_assets_from_file
 
 
-show_timing = False
+show_timing = True
 
 @contextmanager
 def timeit(s):
@@ -55,11 +55,15 @@ def make_page(contents, head0, main_toc):
     html.append(body)
     return html
 
-def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2filename):
-    
-    html = open(ifilename).read()
-    soup = bs_entire_document(html)
-    body = soup.html.body
+def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2filename, assets_dir):
+#     print soup
+#     print soup.html.body
+    with timeit('Reading input file...'):
+        soup = read_html_doc_from_file(ifilename)
+    body = soup.find('body')
+    if body is None:
+        msg = 'Could not find body element'
+        raise Exception(msg)
     head0 = soup.html.head
     # extract the main toc if it is there
     main_toc = body.find(id='main_toc')
@@ -76,7 +80,7 @@ def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2fil
         filename2contents = split_in_files(body)
     
     with timeit('add_prev_next_links()...'):
-        filename2contents = add_prev_next_links(filename2contents)
+        filename2contents = add_prev_next_links(filename2contents, only_for=[filename])
     
     with timeit('make_page()'):
         contents = filename2contents[filename]
@@ -104,6 +108,8 @@ def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2fil
         fn = os.path.join(directory, filename)
         write_data_to_file(result, fn)
     
+    with timeit('extracting assets'):
+        extract_assets_from_file(fn, fn, assets_dir)
 
 
 class Split(QuickApp):
@@ -125,10 +131,7 @@ class Split(QuickApp):
         disqus = self.options.disqus
         logger.setLevel(logging.DEBUG)
         
-        
-        html = open(ifilename).read()
-        soup = bs_entire_document(html)
-
+        soup = read_html_doc_from_file(ifilename)
         body = soup.html.body
         filename2contents = split_in_files(body)
         
@@ -138,11 +141,12 @@ class Split(QuickApp):
             except:
                 pass
         
+        assets_dir = os.path.join(output_dir, 'assets')
+        
         id2filename = get_id2filename(filename2contents)
         linkbase = 'link.html' # do not change (it's used by http://purl.org/dth)
         lb = create_link_base(id2filename)
-        with open(os.path.join(output_dir, linkbase), 'w') as f:
-            f.write(str(lb)) 
+        write_data_to_file(str(lb), os.path.join(output_dir, linkbase))
 
         if preamble:
             preamble = open(preamble).read()
@@ -160,12 +164,13 @@ class Split(QuickApp):
         if False:
             context.comp(remove_spurious, output_dir, list(filename2contents))
         
+#         soup = read_html_doc_from_file(ifilename)
         for filename, contents in filename2contents.items():
             contents_hash = get_md5(str(contents) + str(preamble))[:8]
             # logger.info('Set up %r' % filename)
             job_id = '%s-%s-%s' % (filename, links_hash, contents_hash)
             context.comp(split_file, ifilename, output_dir, filename, mathjax=mathjax, preamble=preamble,
-                         disqus=disqus, id2filename=id2filename,
+                         disqus=disqus, id2filename=id2filename, assets_dir=assets_dir,
                          job_id=job_id)
 
 split_main = Split.get_sys_main()

@@ -1,6 +1,5 @@
 from bs4.element import NavigableString
-
-from mcdp import logger
+ 
 from mcdp_utils_xml import add_class
 
 

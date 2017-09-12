@@ -2,7 +2,6 @@
 from bs4 import BeautifulSoup
 from contracts.utils import raise_desc
 from contracts import contract
-from mcdp_utils_misc.fileutils import write_data_to_file
 
 
 def bs(fragment):
@@ -65,6 +64,8 @@ def read_html_doc_from_file(filename):
     return bs_entire_document(data)
 
 def write_html_doc_to_file(soup, filename):
+    from mcdp_utils_misc import write_data_to_file
+
     html = to_html_entire_document(soup)
     write_data_to_file(html, filename)
 

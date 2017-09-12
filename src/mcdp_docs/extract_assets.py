@@ -1,7 +1,7 @@
 from compmake.utils.filesystem_utils import make_sure_dir_exists
 from mcdp_report.embedded_images import extract_img_to_file
-from mcdp_utils_misc.fileutils import write_data_to_file
-from mcdp_utils_xml.parsing import read_html_doc_from_file,\
+from mcdp_utils_misc import write_data_to_file
+from mcdp_utils_xml import read_html_doc_from_file,\
     write_html_doc_to_file
 import os
 
@@ -38,11 +38,11 @@ class ExtractAssets(QuickAppBase):
         else:
             assets_dir = self.options.assets
                  
-        extract_assets(fi, fo, assets_dir)
+        extract_assets_from_file(fi, fo, assets_dir)
 
 extract_assets_main = ExtractAssets.get_sys_main()
 
-def extract_assets(fi, fo, assets_dir):
+def extract_assets_from_file(fi, fo, assets_dir):
     logger.info('Extracting assets ___')
     logger.info('Input: %s' % fi)
     logger.info('Output: %s' % fo)

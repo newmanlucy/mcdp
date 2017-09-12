@@ -8,7 +8,7 @@ import git
 from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.manual_join_imp import DocToJoin
 from mcdp_utils_misc import memoize_simple
-from mcdp_utils_xml.parsing import bs, to_html_stripping_fragment
+from mcdp_utils_xml import bs, to_html_stripping_fragment
 
 from .github_edit_links import get_repo_root
 

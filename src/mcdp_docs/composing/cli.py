@@ -167,14 +167,15 @@ def find_links_from_master(master_soup, version_soup, raise_errors):
     version_ids = get_ids_from_soup(version_soup)
     missing = []
     seen = [] 
-    
+    found = []
     for a, eid in a_linking_to_fragments(version_soup):
         seen.append(eid)
 
         if not eid in version_ids:
             missing.append(eid)
             if eid in master_ids:
-                logger.info('found %s in master' % eid)
+#                 logger.info('found %s in master' % eid)
+                found.append(eid)
                 linked_element = master_ids[eid]
                 if is_empty_link(a):
 #                     logger.debug('is: %s' % a)
@@ -190,6 +191,7 @@ def find_links_from_master(master_soup, version_soup, raise_errors):
                 add_class(a, 'link-to-master')
             else:
                 logger.info('Not found %r in master.' % eid)
+    logger.debug('Found these links to master materials: %s' % found)
 #     logger.debug('seen: %s' % seen)
 #     logger.debug('missing: %s' % missing)
     

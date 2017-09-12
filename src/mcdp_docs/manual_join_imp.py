@@ -400,9 +400,11 @@ def dissolve(x):
 ATTR_PREV = 'prev'
 ATTR_NEXT = 'next'
 
-def add_prev_next_links(filename2contents):
+def add_prev_next_links(filename2contents, only_for=None):
     new_one = OrderedDict()
     for filename, contents in list(filename2contents.items()):
+        if only_for and not filename in only_for: continue
+        
         id_prev = contents.attrs[ATTR_PREV]
         a_prev = Tag(name='a')
         a_prev.attrs['href'] = '#' + str(id_prev)
@@ -446,7 +448,7 @@ def add_prev_next_links(filename2contents):
 #             del e.attrs['id']
             pass
         else:
-            print('no found %r' % actual_id)
+            logger.error('not found %r' % actual_id)
         S.attrs['id'] = actual_id
 #         del contents2.attrs['id']
 

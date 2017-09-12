@@ -1,12 +1,14 @@
-from mcdp_utils_xml.add_class_and_style import add_class
-from bs4.element import Tag
-import traceback
-from contracts.utils import check_isinstance, indent
 from contracts import contract
 from mcdp import logger
+from mcdp_utils_xml import add_class
+from mcdp_utils_xml import bs
 import sys
-from mcdp_utils_xml.parsing import bs
- 
+import traceback
+
+from bs4.element import Tag
+from contracts.utils import check_isinstance, indent
+
+
 # class to give to the <details> element
 ERROR_CLASS = 'error' 
 WARNING_CLASS = 'warning'
