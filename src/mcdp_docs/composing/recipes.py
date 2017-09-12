@@ -1,12 +1,13 @@
 from abc import abstractmethod, ABCMeta
+from contracts import contract
 import copy
 from mcdp import logger
-from mcdp_utils_xml import soup_find_absolutely
+from mcdp_utils_misc.my_yaml import yaml_dump_pretty
 from mcdp_utils_xml import note_error2
+from mcdp_utils_xml import soup_find_absolutely
 
 from bs4.element import Tag
 from contracts.utils import raise_desc, check_isinstance, indent, raise_wrapped
-import yaml
 
 
 class RecipeContext():
@@ -36,8 +37,10 @@ class TocPlaceholder(Recipe):
     
 class AddByID(Recipe):
     tag = 'add'
-    def __init__(self, id_):
+    @contract(exceptions='list(str)')
+    def __init__(self, id_, exceptions):
         self.id_ = id_
+        self.exceptions = exceptions 
         
     @staticmethod
     def from_yaml(data):
@@ -46,10 +49,13 @@ class AddByID(Recipe):
             raise ValueError(data)
         data = copy.deepcopy(data)
         id_ = data.pop(AddByID.tag)
+        exceptions = data.pop('except', [])
+        if isinstance(exceptions, str):
+            exceptions = [exceptions]
         if data:
-            msg = 'Too many fields'
-            raise_desc(ValueError, msg, data=data)
-        return AddByID(id_)
+            msg = 'Extra fields: %s' % ", ".join(list(data))
+            raise_desc(ValueError, msg)
+        return AddByID(id_, exceptions)
     
     def make(self, context):
         soup = context.soup
@@ -68,6 +74,14 @@ class AddByID(Recipe):
 #         logger.info('e: ' + get_summary_of_section(e))
         e_copy = e.__copy__()
         
+        for eid in self.exceptions:
+            logger.info('Removing sections by id "%s"' % eid)
+            look_for = eid + ':section'
+            s = e_copy.find(id=look_for)
+            if s is None:
+                msg = 'Could not remove "%s" because could not find element with ID "%s"' % (eid, look_for)
+                raise Exception(msg)
+            s.extract()
 #         logger.info('e_copy: ' + get_summary_of_section(e_copy))
         
         return [e_copy] 
@@ -82,7 +96,7 @@ class AddByID(Recipe):
 #     return "The subsections of %r are: %s" % (section.attrs['id'], ", ".join(contains)) 
 
 class MakePart(Recipe):
-    tag = 'part'
+    tag = 'make-part'
     
     def __init__(self, id_part, title, contents):
         check_isinstance(id_part, str)
@@ -123,8 +137,8 @@ class MakePart(Recipe):
         title = data.pop('title')
         contents = data.pop('contents')
         if data:
-            msg = 'Too many fields'
-            raise_desc(ValueError, msg, data=data)
+            msg = 'Extra fields %s' % list(data)
+            raise_desc(ValueError, msg)
         contents = Sequence.from_yaml(contents)
         return MakePart(id_part=id_part, title=title, contents=contents)
      
@@ -164,7 +178,8 @@ def parse_recipe_yaml(data):
         
         AddByID: a dict
         
-            include: id
+            - add: id
+              except: 
     
         MakePart: a dict
         
@@ -192,8 +207,9 @@ def parse_recipe_yaml(data):
             msg = 'Could not interpret recipe.'
             raise_desc(ValueError, msg, data=data)
     except ValueError as e:
-        msg = 'Could not parse recipe YAML.'
-        msg += '\n' + indent(yaml.dump(data), ' > ')
+        msg = 'Could not parse this recipe YAML:'
+        msg += '\n\n' + indent(yaml_dump_pretty(data).rstrip(), '  ')
+        msg += '\n\n because of the error:'
         raise_wrapped(ValueError, e, msg, compact=True)
         
         

@@ -14,6 +14,10 @@ if True:
     
     def yaml_dump(s):
         return yaml.dump(s, Dumper=yaml.RoundTripDumper)
+
+    def yaml_dump_pretty(ob):
+        return yaml.dump(ob, Dumper=yaml.RoundTripDumper)
+
 else:
     import yaml  # @Reimport
     def yaml_load(s):
@@ -21,3 +25,5 @@ else:
     
     def yaml_dump(s):
         return yaml.dump(s)
+    
+    yaml_dump_pretty = yaml_dump

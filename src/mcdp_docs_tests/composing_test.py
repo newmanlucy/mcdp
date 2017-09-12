@@ -46,7 +46,7 @@ docs:
     
     file1.md: |
     
-        # Audacious {#sa} 
+        # Audacious {#sa status=ready} 
         
         This is section Audacious.
         
@@ -59,7 +59,7 @@ docs:
     
     file2.md: |
     
-        # Bumblebee {#sb}
+        # Bumblebee {#sb status=ready}
         
         This is section Bumblebee. 
         
@@ -70,6 +70,10 @@ docs:
         - (number name) <a href="#sc" class="number_name"></a>; (empty) [](#sc)
         - And linking to [](#elephant).
         
+        ## This one will be removed {#to-remove}
+        
+        I don't like this section
+        
         # Elephant {#elephant status=draft}
         
         Section Elephant is not ready.
@@ -77,7 +81,7 @@ docs:
 
     file3.md: |
     
-        # The cat section {#sc}
+        # The cat section {#sc status=ready}
         
         This is section Cat. 
         
@@ -102,6 +106,7 @@ book.version.yaml: |
           title: First part
           contents:
           - add: sb
+            except: to-remove
         - part: part2
           title: Second part
           contents:
@@ -141,12 +146,14 @@ book.version.yaml: |
         data = bs_entire_document(open(res).read())        
         assert data.find(id='sa:section') is not None
         assert data.find(id='sb:section') is not None
+        assert data.find(id='to-remove:section') is not None
 
         run_app(Split, ['--filename', 'dist/master/book.html', '--output_dir', 'dist/master/book'])
         run_app(Compose, ['--config', 'book.version.yaml'])
         version_whole = bs_entire_document(open('dist/version/book.html').read())        
         assert version_whole.find(id='sa:section') is not None
         assert version_whole.find(id='sb:section') is not None
+        assert version_whole.find(id='to-remove:section') is None
         # Now it's preserved
         # assert version_whole.find(id='elephant:section') is None
 

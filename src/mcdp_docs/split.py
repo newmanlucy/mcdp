@@ -1,22 +1,22 @@
 from contextlib import contextmanager
 import logging
+from mcdp import logger
+from mcdp_utils_misc import get_md5
+from mcdp_utils_misc import write_data_to_file
+from mcdp_utils_xml import bs
+from mcdp_utils_xml import bs_entire_document
+from mcdp_utils_xml.parsing import \
+    read_html_doc_from_file
 import os
 import time
 
 from bs4.element import Tag
 from quickapp import QuickApp
 
-from mcdp import logger
-from mcdp_utils_misc import get_md5
-from mcdp_utils_misc import write_data_to_file
-from mcdp_utils_xml import bs
-from mcdp_utils_xml import bs_entire_document
-
 from .add_mathjax import add_mathjax_call, add_mathjax_preamble
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
-from mcdp_utils_xml.parsing import read_html_file
 
 
 show_timing = False
@@ -56,6 +56,7 @@ def make_page(contents, head0, main_toc):
     return html
 
 def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2filename):
+    
     html = open(ifilename).read()
     soup = bs_entire_document(html)
     body = soup.html.body
@@ -185,7 +186,7 @@ def remove_spurious(output_dir, filenames):
                 # already marked as spurious
                 continue
                         
-            soup = read_html_file(fn)
+            soup = read_html_doc_from_file(fn)
             e = soup.find('section')
             if e is not None and 'id' in e.attrs:
                 id_ = e.attrs['id'].replace(':section','')
