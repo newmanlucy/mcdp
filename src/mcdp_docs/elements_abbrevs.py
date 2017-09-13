@@ -1,7 +1,7 @@
 from mcdp_utils_xml import add_class
 
 from bs4.element import Tag, NavigableString
-from contracts.utils import indent
+
 from mcdp.exceptions import DPSyntaxError
 from mcdp_lang_utils.where import Where
 from mcdp_lang_utils.where_utils import location

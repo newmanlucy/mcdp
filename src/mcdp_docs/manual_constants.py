@@ -4,7 +4,7 @@ from mcdp import MCDPConstants
 import mcdp
 
 
-class MCDPManualConstants:
+class MCDPManualConstants(object):
     activate_tilde_as_nbsp = False
     
     
@@ -46,6 +46,9 @@ class MCDPManualConstants:
     CLASS_ONLY_NAME = 'only_name'
     CLASS_NUMBER_NAME ='number_name'
 
+    enable_syntax_higlighting = True
+    enforce_status_attribute = True
+    enforce_lang_attribute = True
 
 #     InfoBegin
 # InfoKey: dc:description

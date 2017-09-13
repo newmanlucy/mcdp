@@ -25,6 +25,10 @@ class GlobalCounter:
     header_id = 1
 
 
+def fix_ids_and_add_missing(soup, globally_unique_id_part):
+    for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
+        fix_header_id(h, globally_unique_id_part)
+        
 def fix_header_id(header, globally_unique_id_part):
     ID = header.get('id', None)
     prefix = None if (ID is None or not ':' in ID) else ID[:ID.index(':')]
@@ -57,10 +61,9 @@ def fix_header_id(header, globally_unique_id_part):
                     logger.error(msg)
                     header.insert_after(Comment('Error: ' + msg))
 
-def fix_ids_and_add_missing(soup, globally_unique_id_part):
-    for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
-        fix_header_id(h, globally_unique_id_part)
 
+class InvalidHeaders(ValueError):
+    pass
 def get_things_to_index(soup):
     """
         nothing with attribute "notoc"
@@ -78,7 +81,12 @@ def get_things_to_index(soup):
             continue
 
         if h.name in ['h1', 'h2', 'h3', 'h4']:
-#             fix_header_id(h)
+            if not 'id' in h.attrs:
+                msg = 'This header does not have an ID set.'
+                msg +='\n header: ' + str(h)
+                msg +='\nThe function fix_ids_and_add_missing() adds missing IDs.'
+                raise InvalidHeaders(msg)
+            
             h_id = h.attrs['id']
             if h.name == 'h1':
                 if h_id.startswith('part:'):
@@ -88,7 +96,10 @@ def get_things_to_index(soup):
                 elif h_id.startswith('sec:'):
                     depth = 3
                 else:
-                    raise ValueError(h)
+                    msg = 'I expected that this header would start with either part:,app:,sec:.'
+                    msg += '\n' + str(h)
+                    msg +='\nThe function fix_ids_and_add_missing() adds missing IDs and fixes them.'
+                    raise InvalidHeaders(msg)
             elif h.name == 'h2':
                 depth = 4
             elif h.name == 'h3':
