@@ -47,7 +47,7 @@ def check_status_codes(soup, realpath):
                     for k, v in allowed_statuses.items():
                         if k != STATUS_UNKNOWN:
                             msg += '\n' + indent(v, '', '%23s   ' % ('status=%s'%k))
-                    note_warning2(h, 'missing status', msg)
+                    note_error2(h, 'missing status', msg)
             h.attrs[STATUS_ATTR] = STATUS_UNKNOWN
                 
 

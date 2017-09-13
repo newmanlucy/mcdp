@@ -24,6 +24,7 @@ show_timing = False
 
 if getpass.getuser() == 'andrea':
     show_timing = True
+    show_timing = False
 
 @contextmanager
 def timeit(s):
