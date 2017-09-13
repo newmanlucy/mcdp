@@ -14,6 +14,7 @@ allowed_statuses['beta'] =  'This is ready for review.'
 allowed_statuses['ready'] =  'This is ready to be published.'
 allowed_statuses['to-update'] =  'This is out-of-date and needs a refresh.'
 allowed_statuses['deprecated'] =  'This part is deprecated and will be eventually deleted.'
+allowed_statuses['recently-updated'] =  'This part has been recently updated (<1 week).'
 
 def all_headers(soup):
     headers = ['h1','h2','h3','h4','h5']
@@ -22,6 +23,8 @@ def all_headers(soup):
         
 def check_status_codes(soup, realpath):
     for h in all_headers(soup):
+        if 'notoc' in h.attrs:
+            continue
         if STATUS_ATTR in h.attrs:
             s = h.attrs[STATUS_ATTR]
             if not s in allowed_statuses:

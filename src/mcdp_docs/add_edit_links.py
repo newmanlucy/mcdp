@@ -30,7 +30,7 @@ def add_github_links_if_edit_url(soup, permalink_prefix='http://purl.org/dth/'):
                 hid = hid[hid.index(':')+1:]
             if not 'autoid' in hid:
                 url = permalink_prefix + str(hid)
-                logger.debug('adding link to %r' % url)
+                #logger.debug('adding link to %r' % url)
                 a.attrs['href'] = url
                 a.string = '🔗'
                 a.attrs['class'] = 'purl-link'

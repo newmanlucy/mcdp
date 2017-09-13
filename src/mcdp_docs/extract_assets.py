@@ -5,7 +5,7 @@ from mcdp_utils_xml import read_html_doc_from_file,\
     write_html_doc_to_file
 import os
 
-from quickapp.quick_app_base import QuickAppBase
+from quickapp import QuickAppBase
 
 from .logs import logger
 
@@ -43,10 +43,10 @@ class ExtractAssets(QuickAppBase):
 extract_assets_main = ExtractAssets.get_sys_main()
 
 def extract_assets_from_file(fi, fo, assets_dir):
-    logger.info('Extracting assets ___')
-    logger.info('Input: %s' % fi)
-    logger.info('Output: %s' % fo)
-    logger.info('Using assets dir: %s' % assets_dir)
+#     logger.info('Extracting assets ___')
+#     logger.info('Input: %s' % fi)
+#     logger.info('Output: %s' % fo)
+#     logger.info('Using assets dir: %s' % assets_dir)
 
     make_sure_dir_exists(fo)
     if not os.path.exists(assets_dir):
@@ -65,11 +65,11 @@ def extract_assets_from_file(fi, fo, assets_dir):
     extract_img_to_file(soup, savefile)
 
     write_html_doc_to_file(soup, fo)
-    s1 = os.path.getsize(fo)
-    inmb = lambda x: '%.1f MB' % (x / (1024.0*1024)) 
-    
-    msg = 'File size: %s -> %s' % (inmb(s0), inmb(s1))
-    logger.info(msg)
+    if False:
+        s1 = os.path.getsize(fo)
+        inmb = lambda x: '%.1f MB' % (x / (1024.0*1024)) 
+        msg = 'File size: %s -> %s' % (inmb(s0), inmb(s1))
+        logger.info(msg)
 
     
 if __name__ == '__main__':
