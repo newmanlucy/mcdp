@@ -173,8 +173,8 @@ class Split(QuickApp):
         if self.options.faster_but_imprecise:
             links_hash = "nohash"
 
-        logger.debug('hash data: %r' % data)
-        logger.debug('hash value: %r' % links_hash)
+#         logger.debug('hash data: %r' % data)
+#         logger.debug('hash value: %r' % links_hash)
         
         
         if True:
@@ -199,7 +199,7 @@ def remove_spurious(output_dir, filenames):
         if not f in filenames:
             fn = os.path.join(output_dir, f)
             msg = 'I found a spurious file from earlier compilations: %s' % fn
-            msg += '(%s not in %s) ' % (f, filenames)
+#             msg += '(%s not in %s) ' % (f, filenames)
             logger.warning(msg)
 
             if 'SPURIOUS' in open(fn).read():
