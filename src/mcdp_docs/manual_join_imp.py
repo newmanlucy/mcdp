@@ -18,6 +18,7 @@ from .moving_copying_deleting import move_things_around
 from .read_bibtex import extract_bibtex_blocks
 from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER, \
     LABEL_WHAT_NUMBER_NAME, LABEL_WHAT, LABEL_NUMBER, LABEL_NAME, LABEL_SELF
+from mcdp_utils_xml.misc import copy_contents_into
 
 
 
@@ -99,7 +100,6 @@ def manual_join(template, files_contents,
         from mcdp_docs.latex.latex_preprocess import assert_not_inside
         assert_not_inside(doc_to_join.contents, 'DOCTYPE')
         frag = bs(doc_to_join.contents)
-
         basename2soup[doc_to_join.docname] = frag
 
     fix_duplicated_ids(basename2soup)
@@ -108,15 +108,21 @@ def manual_join(template, files_contents,
     add_comments = False
     for docname, content in basename2soup.items():
 #         logger.debug('docname %r -> %s KB' % (docname, len(data) / 1024))
-
-
         if add_comments:
             body.append(NavigableString('\n\n'))
             body.append(Comment('Beginning of document dump of %r' % docname))
             body.append(NavigableString('\n\n'))
-        for x in content:
-            x2 = x.__copy__()  # not clone, not extract, just copy
-            body.append(x2)
+#         for x in content:
+# #             x2 = x.__copy__()  # not clone, not extract, just copy
+# #             body.append(x2)
+# #             
+        copy_contents_into(content, body)
+#             
+        f = body.find('fragment')
+        if f:
+            msg = 'I found a <fragment> in the manual after %r' % docname
+            raise Exception(msg)
+        
         if add_comments:
             body.append(NavigableString('\n\n'))
             body.append(Comment('End of document dump of %r' % docname))
@@ -169,6 +175,8 @@ def manual_join(template, files_contents,
 
 def document_final_pass_before_toc(soup, remove, remove_selectors):
     logger.info('reorganizing contents in <sections>')
+    
+    
     body = soup.find('body')
     if body is None:
         msg = 'Cannot find <body>:\n%s' % indent(str(soup)[:1000], '|')

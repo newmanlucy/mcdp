@@ -7,3 +7,8 @@ def soup_find_absolutely(soup, id_):
         raise KeyError(msg)
     assert e.attrs['id'] == id_
     return e
+
+
+def copy_contents_into(a, b):
+    for e in a.children:
+        b.append(e.__copy__())
