@@ -432,14 +432,12 @@ def render(s, counter_state):
 def substituting_empty_links(soup, raise_errors=False):
     '''
 
-
         default style is [](#sec:systems)  "Chapter 10"
 
 
         You can also use "class":
 
             <a href='#sec:name' class='only_number'></a>
-
 
     '''
 
@@ -561,7 +559,9 @@ def sub_link(a, element_id, element, raise_errors):
             else:
                 label = label_name
         else:
-            label = label_what_number
+            # default behavior
+            # label = label_what_number
+            label = label_what_number + ' - ' + label_name
 
         frag = bs(label)
         assert frag.name == 'fragment'

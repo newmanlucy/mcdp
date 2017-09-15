@@ -6,11 +6,12 @@ from contracts import contract
 from contracts.utils import raise_desc, raise_wrapped, check_isinstance
 from mcdp import logger
 from mcdp.exceptions import DPSyntaxError
-from mcdp_docs.latex.latex_inside_equation_abbrevs import replace_inside_equations
 from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.mark.markdown_transform import is_inside_markdown_quoted_block
+from mcdp_lang_utils import Where
 from mcdp_utils_misc import get_md5
-from mcdp_lang_utils.where import Where
+
+from .latex_inside_equation_abbrevs import replace_inside_equations
 
 
 class LatexProcessingConstants():
