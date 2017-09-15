@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
+import os
+import re
+
 from contracts import contract
+from contracts.utils import raise_desc, raise_wrapped, check_isinstance
 from mcdp import logger
 from mcdp.exceptions import DPSyntaxError
 from mcdp_docs.latex.latex_inside_equation_abbrevs import replace_inside_equations
 from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.mark.markdown_transform import is_inside_markdown_quoted_block
-from mcdp_utils_misc.string_utils import get_md5
-import os
-import re
-
-from contracts.interface import Where
-from contracts.utils import raise_desc, raise_wrapped, check_isinstance
+from mcdp_utils_misc import get_md5
 
 
 class LatexProcessingConstants():

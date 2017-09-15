@@ -1,7 +1,7 @@
 from collections import namedtuple
-from contracts import contract
 import urllib2
 
+from contracts import contract
 from contracts.utils import raise_wrapped
 
 

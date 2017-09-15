@@ -1,5 +1,9 @@
+from bs4.element import Tag, NavigableString
+from pygments.lexers import get_lexer_by_name
+
 from mcdp import logger
-from mcdp_utils_xml.add_class_and_style import add_class
+from mcdp_utils_xml import add_class, bs
+
 
 try:
     import pygments  # @UnusedImport
@@ -9,10 +13,7 @@ except ImportError:
     logger.error(msg)
     raise Exception(msg)
     
-from pygments.lexers import get_lexer_by_name
 
-from bs4.element import Tag, NavigableString
-from mcdp_utils_xml.parsing import bs
 
 def strip_pre(soup):
     es = list(soup.select('[trim]'))

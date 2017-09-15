@@ -1,13 +1,14 @@
+import os
+import shutil
+from tempfile import mkdtemp
+
+from system_cmd import CmdException, system_cmd_result
+
 from contracts import contract
+from contracts.utils import raise_wrapped, indent, raise_desc
 from mcdp import logger
 from mcdp_utils_misc import dir_from_package_name, get_mcdp_tmp_dir, memoize_simple
 from mcdp_utils_xml import bs, to_html_stripping_fragment
-import os
-import shutil
-from system_cmd import CmdException, system_cmd_result
-from tempfile import mkdtemp
-
-from contracts.utils import raise_wrapped, indent, raise_desc
 
 
 __all__ = [

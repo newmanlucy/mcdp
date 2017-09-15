@@ -1,4 +1,4 @@
-from mcdp_utils_xml.note_errors_inline import note_error2
+from mcdp_utils_xml import note_error2
 
 
 def move_things_around(soup, raise_if_errors=False): 

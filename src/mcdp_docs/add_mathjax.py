@@ -1,3 +1,4 @@
+import os
 import sys
 
 from bs4 import BeautifulSoup, Tag
@@ -5,7 +6,6 @@ from bs4 import BeautifulSoup, Tag
 from contracts.utils import raise_desc, check_isinstance
 
 from .logs import logger
-import os
 
 
 def add_mathjax_call(soup):

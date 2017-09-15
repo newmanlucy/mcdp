@@ -1,6 +1,8 @@
-from mcdp_utils_xml.note_errors_inline import note_error2, note_warning2
-from contracts.utils import indent
 from collections import OrderedDict
+
+from contracts.utils import indent
+from mcdp_utils_xml import note_error2
+
 
 STATUS_ATTR = 'status'
 STATUS_UNKNOWN = 'unknown'

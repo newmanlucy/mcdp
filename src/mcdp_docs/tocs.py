@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from collections import namedtuple
-from mcdp.logs import logger
-from mcdp_docs.manual_constants import MCDPManualConstants
-from mcdp_docs.toc_number import render_number, number_styles
-from mcdp_utils_xml import add_class, bs
-from mcdp_utils_xml.note_errors_inline import note_error2
 
 from bs4.element import Comment, Tag, NavigableString
+
 from contracts.utils import indent
+from mcdp.logs import logger
+from mcdp_utils_xml import add_class, bs, note_error2
+
+from .manual_constants import MCDPManualConstants
+from .toc_number import render_number, number_styles
 
 
 figure_prefixes = ['fig', 'tab', 'subfig', 'code']

@@ -1,11 +1,13 @@
 from collections import namedtuple
-from contracts.utils import raise_desc, raise_wrapped
 import json
+from urllib2 import URLError
 import urllib2
 
 from bs4.element import Tag, Comment
-from urllib2 import URLError
-from mcdp_utils_xml.note_errors_inline import note_error2
+
+from contracts.utils import raise_desc, raise_wrapped
+from mcdp_utils_xml import note_error2
+
 
 def make_videos(soup, raise_on_errors=False):
     """

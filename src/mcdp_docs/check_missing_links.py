@@ -1,7 +1,7 @@
-from mcdp.logs import logger
-from mcdp_utils_xml.note_errors_inline import note_error2, note_warning2
-
 from bs4.element import Comment
+
+from mcdp.logs import logger
+from mcdp_utils_xml import note_error2, note_warning2
 
 
 show_debug_message_for_corrected_links = False

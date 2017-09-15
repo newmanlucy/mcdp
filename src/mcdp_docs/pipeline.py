@@ -7,15 +7,13 @@ from contracts.utils import raise_desc, indent
 from mcdp import logger
 from mcdp.constants import MCDPConstants
 from mcdp.exceptions import DPInternalError
-from mcdp_docs.status import check_status_codes, check_lang_codes
-from mcdp_docs.syntax_highlight import syntax_highlighting, strip_pre
-from mcdp_docs.tocs import fix_ids_and_add_missing
 from mcdp_library import MCDPLibrary
 from mcdp_report.gg_utils import embed_images_from_library2
 from mcdp_utils_misc.string_utils import get_md5
 from mcdp_utils_xml import to_html_stripping_fragment, bs, describe_tag
 
 from .check_missing_links import check_if_any_href_is_invalid, fix_subfig_references
+from .elements_abbrevs import check_good_use_of_special_paragraphs
 from .elements_abbrevs import other_abbrevs
 from .github_file_ref.display_file_imp import display_files
 from .github_file_ref.substitute_github_refs_i import substitute_github_refs
@@ -24,8 +22,10 @@ from .macros import replace_macros
 from .make_console_pre import mark_console_pres
 from .make_figures import make_figure_from_figureid_attr
 from .prerender_math import escape_for_mathjax_back, escape_for_mathjax
+from .status import check_status_codes, check_lang_codes
+from .syntax_highlight import syntax_highlighting, strip_pre
+from .tocs import fix_ids_and_add_missing
 from .videos import make_videos
-from mcdp_docs.elements_abbrevs import check_good_use_of_special_paragraphs
 
 
 __all__ = [
@@ -48,7 +48,7 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     s0 = s
     check_good_use_of_special_paragraphs(s0, realpath)
     raise_missing_image_errors = raise_errors
-    raise_missing_image_errors = False
+#     raise_missing_image_errors = False
     
     # Imports here because of circular dependencies
     from .latex.latex_preprocess import extract_maths, extract_tabular

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from contracts.utils import raise_desc
-from mcdp_lang_utils.where_utils import line_and_col, location
 
-from .where_utils import printable_length_where
+from .where_utils import line_and_col, location, printable_length_where
 
 
 class Where(object):

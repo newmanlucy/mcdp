@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 import logging
-from mcdp import MCDPConstants, logger, mcdp_dev_warning
-from mcdp_library import Librarian
-from mcdp_report.html import get_css_filename
 import os
+
+from decent_params import UserError
+from quickapp import QuickAppBase
 from system_cmd import system_cmd_show
 
 from contracts.enabling import disable_all
 from contracts.utils import raise_desc
-from decent_params import UserError
-from quickapp import QuickAppBase
-
-from .minimal_doc import get_minimal_document
+from mcdp import MCDPConstants, logger, mcdp_dev_warning
+from mcdp_library import Librarian
+from mcdp_report.html import get_css_filename
 from mcdp_utils_xml.parsing import \
     bs_entire_document, to_html_entire_document
-from mcdp_docs.manual_join_imp import document_final_pass_after_toc,\
+
+from .add_mathjax import add_mathjax_preamble
+from .manual_join_imp import document_final_pass_after_toc, \
     document_final_pass_before_toc, generate_and_add_toc
-from mcdp_docs.add_mathjax import add_mathjax_preamble
+from .minimal_doc import get_minimal_document
 
 
 class Render(QuickAppBase): 

@@ -2,13 +2,13 @@
 import os
 
 from bs4 import Tag, NavigableString
-from contracts import contract
 from system_cmd import system_cmd_result
 
+from comptests.registrar import run_module_tests, comptest
+from contracts import contract
 from mcdp import logger
 from mcdp_utils_misc import tmpdir
 from mcdp_utils_xml import bs
-from comptests.registrar import run_module_tests, comptest
 
 
 #

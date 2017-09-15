@@ -5,12 +5,12 @@ import time
 from bs4.element import Tag
 import git
 
-from mcdp_docs.manual_constants import MCDPManualConstants
-from mcdp_docs.manual_join_imp import DocToJoin
 from mcdp_utils_misc import memoize_simple
 from mcdp_utils_xml import bs, to_html_stripping_fragment
 
 from .github_edit_links import get_repo_root
+from .manual_constants import MCDPManualConstants
+from .manual_join_imp import DocToJoin
 
 
 @memoize_simple
@@ -31,7 +31,7 @@ def get_source_info(filename):
     path = filename
     try:
         commit = repo.iter_commits(paths=path, max_count=1).next()
-    except (StopIteration, ValueError) as e:
+    except (StopIteration, ValueError) as _e:
         # ValueError: Reference at 'refs/heads/master' does not exist
         return None
     author = commit.author

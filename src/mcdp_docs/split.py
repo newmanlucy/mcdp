@@ -1,20 +1,18 @@
 from contextlib import contextmanager
 import getpass
 import logging
-from mcdp import logger
-from mcdp_docs.extract_assets import extract_assets_from_file
-from mcdp_utils_misc import get_md5
-from mcdp_utils_misc import write_data_to_file
-from mcdp_utils_xml import bs
-from mcdp_utils_xml.parsing import \
-    read_html_doc_from_file
 import os
 import time
 
 from bs4.element import Tag
 from quickapp import QuickApp
 
+from mcdp import logger
+from mcdp_utils_misc import get_md5, write_data_to_file
+from mcdp_utils_xml import bs, read_html_doc_from_file
+
 from .add_mathjax import add_mathjax_call, add_mathjax_preamble
+from .extract_assets import extract_assets_from_file
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus

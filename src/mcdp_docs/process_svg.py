@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 
-from mcdp_utils_misc.locate_files_imp import locate_files
 import os
-from system_cmd import system_cmd_result
-from mcdp_utils_misc.fileutils import create_tmpdir
-from compmake.utils.friendly_path_imp import friendly_path
-join = os.path.join
-from decent_params.utils.script_utils import UserError, wrap_script_entry_point
 import shutil
+
+from decent_params.utils.script_utils import UserError, wrap_script_entry_point
+from system_cmd import system_cmd_result
+
+from compmake.utils.friendly_path_imp import friendly_path
+from mcdp import logger
+from mcdp_utils_misc import create_tmpdir, locate_files
+
+
+join = os.path.join
 
 
 inkscape_cmd = 'inkscape'
@@ -19,7 +23,6 @@ if os.path.exists(mac):
 latex_cmd = 'pdflatex'
 crop_cmd = 'pdfcrop'
 
-from mcdp import logger
 
 def process_svg_files(root, out, preamble):
     logger.info('root = %s' % root)
