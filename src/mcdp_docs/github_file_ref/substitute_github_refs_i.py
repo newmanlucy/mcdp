@@ -61,6 +61,9 @@ def get_all_files(dirname):
         
     return sorted(res)
 
+class CouldNotResolveRef(Exception):
+    pass
+
 def resolve_reference(ref, defaults):
     
     for k, v in defaults.items():
@@ -87,11 +90,11 @@ def resolve_reference(ref, defaults):
         msg = 'Could not find reference to file %r.' % ref.path
         msg += '\n checkout in %s' % dirname
         msg += '\n' + str(ref)
-        raise DPSemanticError(msg)
+        raise CouldNotResolveRef(msg)
     if len(matches) > 1:
         msg = 'Multiple matches for %r.' % ref.path
         msg += '\n' +"\n".join(matches)
-        raise DPSemanticError(msg)
+        raise CouldNotResolveRef(msg)
     
     filename = os.path.realpath(matches[0])
     base= os.path.realpath(dirname)

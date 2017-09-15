@@ -165,8 +165,9 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
         msg += '\nI will ignore this error because it might not be the fault of the writer.'
         msg += '\n\n'+indent(str(e), '|', ' error: |')
         logger.warn(msg)
+        
     # must be before make_figure_from_figureid_attr()
-    display_files(soup, defaults={})
+    display_files(soup, defaults={}, raise_errors=raise_errors)
     
     make_figure_from_figureid_attr(soup)
     col_macros(soup)
