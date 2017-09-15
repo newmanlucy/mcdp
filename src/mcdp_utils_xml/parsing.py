@@ -1,6 +1,6 @@
 
 from bs4 import BeautifulSoup
-from contracts.utils import raise_desc
+from contracts.utils import raise_desc, indent
 from contracts import contract
 
 
@@ -21,10 +21,22 @@ def bs(fragment):
 def to_html_stripping_fragment(soup):
     """ Returns a string encoded in UTF-8 """
     assert soup.name == 'fragment'
+    # Delete all the attrs, otherwise it is not going to look like '<fragment>'
+    for k in list(soup.attrs):
+        del soup.attrs[k]
     s = str(soup)
+    
+    S0 = '<fragment>'
+    S1 = '</fragment>'
+    if not s.startswith(S0):
+        msg = 'Invalid generated fragment; expecting %r.' % S0
+        msg += '\n\n' + indent(s, ' | ')
+        raise Exception(msg)
+    
     check_html_fragment(s)
-    s = s.replace('<fragment>','')
-    s = s.replace('</fragment>','')
+    
+    s = s[len(S0):]
+    s = s[:-len(S1)]
     return s
 
 def to_html_stripping_fragment_document(soup):
