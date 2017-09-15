@@ -10,6 +10,7 @@ from mcdp_docs.latex.latex_inside_equation_abbrevs import replace_inside_equatio
 from mcdp_docs.manual_constants import MCDPManualConstants
 from mcdp_docs.mark.markdown_transform import is_inside_markdown_quoted_block
 from mcdp_utils_misc import get_md5
+from mcdp_lang_utils.where import Where
 
 
 class LatexProcessingConstants():
