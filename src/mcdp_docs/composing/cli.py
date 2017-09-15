@@ -191,7 +191,7 @@ def find_links_from_master(master_soup, version_soup, raise_errors):
                 add_class(a, 'link-to-master')
             else:
                 logger.info('Not found %r in master.' % eid)
-    logger.debug('Found these links to master materials: %s' % found)
+#     logger.debug('Found these links to master materials: %s' % found)
 #     logger.debug('seen: %s' % seen)
 #     logger.debug('missing: %s' % missing)
     

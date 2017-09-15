@@ -1,6 +1,8 @@
 from contextlib import contextmanager
+import getpass
 import logging
 from mcdp import logger
+from mcdp_docs.extract_assets import extract_assets_from_file
 from mcdp_utils_misc import get_md5
 from mcdp_utils_misc import write_data_to_file
 from mcdp_utils_xml import bs
@@ -16,10 +18,13 @@ from .add_mathjax import add_mathjax_call, add_mathjax_preamble
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
-from mcdp_docs.extract_assets import extract_assets_from_file
 
 
-show_timing = True
+show_timing = False
+
+if getpass.getuser() == 'andrea':
+    show_timing = True
+    show_timing = False
 
 @contextmanager
 def timeit(s):
@@ -155,16 +160,26 @@ class Split(QuickApp):
         for k in list(id2filename):
             if not 'autoid' in k:
                 ids_to_use.append(k)
-        data = "".join(id2filename[_] for _ in ids_to_use)
-        links_hash = get_md5(data)[:8]
+        ids_to_use = sorted(ids_to_use)
         
+        pointed_to =[]
+        for k in ids_to_use:
+            f = id2filename[k]
+            if not f in pointed_to:
+                pointed_to.append(f)
+                
+        data = ",".join(pointed_to)
+        links_hash = get_md5(data)[:8]
         if self.options.faster_but_imprecise:
             links_hash = "nohash"
+
+#         logger.debug('hash data: %r' % data)
+#         logger.debug('hash value: %r' % links_hash)
         
-        if False:
+        
+        if True:
             context.comp(remove_spurious, output_dir, list(filename2contents))
         
-#         soup = read_html_doc_from_file(ifilename)
         for filename, contents in filename2contents.items():
             contents_hash = get_md5(str(contents) + str(preamble))[:8]
             # logger.info('Set up %r' % filename)
@@ -184,7 +199,7 @@ def remove_spurious(output_dir, filenames):
         if not f in filenames:
             fn = os.path.join(output_dir, f)
             msg = 'I found a spurious file from earlier compilations: %s' % fn
-            msg += '(%s not in %s) ' % (f, filenames)
+#             msg += '(%s not in %s) ' % (f, filenames)
             logger.warning(msg)
 
             if 'SPURIOUS' in open(fn).read():

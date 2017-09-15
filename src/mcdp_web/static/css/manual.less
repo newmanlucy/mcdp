@@ -1111,6 +1111,9 @@ a.link-to-master {
 @color-to-update: blue;
 @color-unknown: gray;
 @color-deprecated: purple;
+@color-recently-updated: purple;
+@section-ribbon: 0.5em;
+@section-padding: 0.5em;
 
 section[status=draft]::before {
     content: 'This section is marked as draft';
@@ -1122,7 +1125,8 @@ section[status=draft]::before {
     padding-right: 0.5em;
 }
 section[status=draft] {
-    border-right: solid 1em fade(@color-draft, 20%);
+    border-right: solid @section-ribbon fade(@color-draft, 20%);
+    padding-right: @section-padding;
 }
 
 section[status=beta]::before {
@@ -1135,7 +1139,8 @@ section[status=beta]::before {
     padding-right: 0.5em;
 }
 section[status=beta] {
-    border-right: solid 1em fade(@color-beta, 20%);
+    border-right: solid @section-ribbon fade(@color-beta, 20%);
+    padding-right: @section-padding;
 }
 
 
@@ -1149,7 +1154,8 @@ section[status=to-update]::before {
     padding-right: 0.5em;
 }
 section[status=to-update] {
-    border-right: solid 1em fade(@color-to-update, 20%);
+    border-right: solid @section-ribbon fade(@color-to-update, 20%);
+    padding-right: @section-padding;
 }
 
 section[status=unknown][level=sec]::before {
@@ -1162,7 +1168,23 @@ section[status=unknown][level=sec]::before {
     padding-right: 0.5em;
 }
 section[status=unknown][level=sec] {
-    border-right: solid 1em fade(@color-unknown, 20%);
+    border-right: solid @section-ribbon fade(@color-unknown, 20%);
+    padding-right: @section-padding;
+}
+
+
+section[status=recently-updated]::before {
+    content: 'This section has been recently updated (< 1 week)';
+    color: @color-recently-updated;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+}
+section[status=recently-updated] {
+    border-right: solid @section-ribbon fade(@color-recently-updated, 20%);
+    padding-right: @section-padding;
 }
 
 
@@ -1176,5 +1198,6 @@ section[status=deprecated]::before {
     padding-right: 0.5em;
 }
 section[status=deprecated] {
-    border-right: solid 1em fade(@color-deprecated, 20%);
+    border-right: solid @section-ribbon fade(@color-deprecated, 20%);
+    padding-right: @section-padding;
 }

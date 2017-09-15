@@ -16,6 +16,7 @@ from bs4.element import Tag
 from contracts.utils import check_isinstance, raise_wrapped
 
 from .pdf_conversion import png_from_pdf
+from mcdp_utils_misc.fileutils import write_data_to_file
 
 
 # def embed_images(html, basedir):
@@ -89,13 +90,11 @@ def extract_assets(html, basedir):
             if tag.has_attr('download'):
                 basename = tag['download']
             else:
-                print('cannot find attr "download" in tag')
+                logger.warn('cannot find attr "download" in tag')
                 # print tag
                 continue
             filename = os.path.join(basedir, basename)
-            with open(filename, 'w') as f:
-                f.write(data)
-            print('written to %s' % filename)
+            write_data_to_file(data, filename)
 
 
 def extract_img_to_file(soup, savefile):
@@ -199,7 +198,8 @@ def extract_img_to_file_(soup, savefile, tagname, attrname):
         check_isinstance(use_src, str)
         tag[attrname] = use_src
         n += 1
-    logger.debug(('extract_img_to_file: extracted %d/%d images from %r tags, '
+    if False:
+        logger.debug(('extract_img_to_file: extracted %d/%d images from %r tags, '
                  ' attribute %r.') % (n, tot, tagname, attrname))
 
 
@@ -207,7 +207,7 @@ def get_ext_for_mime(mime):
     """ Returns the extension (without the dot) """
     if False:
         if mime == 'image/jpg':
-            print('warning: the correct mime is image/jpeg not "jpg".')
+            logger.debug('warning: the correct mime is image/jpeg not "jpg".')
         
     known = {
         'image/svg+xml': 'svg',
@@ -248,7 +248,6 @@ def embed_img_data(soup, resolve, raise_on_error, img_extensions=['png', 'jpg', 
         if href.startswith('http'):
             msg = 'I will not embed remote files, such as %s: ' % href
             note_warning2(tag, 'Resource error', msg)
-#             logger.warning(msg)
             continue
         
         for ext in img_extensions:
@@ -264,9 +263,7 @@ def embed_img_data(soup, resolve, raise_on_error, img_extensions=['png', 'jpg', 
                 if raise_on_error:
                     raise Exception(msg) # XXX
                 else:
-                    
-                    note_error2(tag, 'Resource error', msg)
-                    
+                    note_error2(tag, 'Resource error', msg) 
                     continue
             
             check_isinstance(data, str)
