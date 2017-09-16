@@ -434,7 +434,6 @@ def substituting_empty_links(soup, raise_errors=False):
 
         default style is [](#sec:systems)  "Chapter 10"
 
-
         You can also use "class":
 
             <a href='#sec:name' class='only_number'></a>
@@ -449,6 +448,51 @@ def substituting_empty_links(soup, raise_errors=False):
         element_id = le.eid
         element = le.linked
         sub_link(a, element_id, element, raise_errors)
+        
+    # Now mark as errors the ones that 
+    for a in get_empty_links(soup):
+        href = a.attrs.get('href', '(not present)')
+        if href.startswith('http:') or href.startswith('https:'):
+            msg  = """
+This link text is empty. 
+
+Note that the syntax for links in Markdown is
+
+    [link text](URL)
+
+For the internal links (where URL starts with "#"), then the documentation
+system can fill in the title automatically, leading to the format:
+
+    [](#other-section)
+
+However, this does not work for external sites, such as:
+
+    [](MYURL)
+    
+So, you need to provide some text, such as:
+
+    [this useful website](MYURL)
+            
+"""
+            msg = msg.replace('MYURL', href)
+            note_error2(a, 'syntax error', msg.strip())
+            
+        else:
+            msg = """
+This link is empty. It might be that the writer intended for this 
+link to point to something, but they got the syntax wrong.
+
+    href = %s
+    
+As a reminder, to refer to other parts of the document, use
+the syntax "#ID", such as: 
+
+    See [](#fig:my-figure).
+    
+    See [](#section-name).
+    
+""" % href
+        note_error2(a, 'syntax error', msg.strip())
 #         n += 1
 #     logger.debug('substituting_empty_links: %d total, %d errors' %
 #                  (n, nerrors))
@@ -582,15 +626,18 @@ def is_empty_link(a):
     empty = len(list(a.descendants)) == 0
     return empty
 
+def get_empty_links(soup):
+    """ Yields all the empty links """
+    for element in soup.find_all('a'):
+        if not is_empty_link(element):
+            continue
+        yield element
+    
 def get_empty_links_to_fragment(soup):
     """
-        Find all links that have a reference to a fragment.
+        Find all empty links that have a reference to a fragment.
         yield LinkElement
-    """
-#
-# s.findAll(lambda tag: tag.name == 'p' and tag.find(True) is None and
-# (tag.string is None or tag.string.strip()==""))
-
+    """ 
     logger.debug('building index')
     # first find all elements by id
     id2element = {}
@@ -600,29 +647,24 @@ def get_empty_links_to_fragment(soup):
 
     logger.debug('building index done')
 
-    for element in soup.find_all('a'):
-
-#         logger.debug('get_empty_links_to_fragment link: %s %s' % (element, empty))
-
-        if not is_empty_link(element):
-            continue
-
+    for element in get_empty_links(soup):
         if not 'href' in element.attrs:
             continue
 
         href = element.attrs['href']
-        if href.startswith('#'):
-            rest = href[1:]
-            if '/' in rest:
-                i = rest.index('/')
-                eid = rest[:i]
-                query = rest[i+1:]
-            else:
-                eid = rest
-                query = None
+        if not href.startswith('#'):
+            continue
+        rest = href[1:]
+        if '/' in rest:
+            i = rest.index('/')
+            eid = rest[:i]
+            query = rest[i+1:]
+        else:
+            eid = rest
+            query = None
 
-            linked = id2element.get(eid, None)
-            yield LinkElement(linker=element, eid=eid, linked=linked, query=query)
+        linked = id2element.get(eid, None)
+        yield LinkElement(linker=element, eid=eid, linked=linked, query=query)
 
 
 def get_ids_from_soup(soup):
