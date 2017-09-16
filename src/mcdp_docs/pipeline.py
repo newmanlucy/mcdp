@@ -309,7 +309,7 @@ def protect_my_envs(s):
         
     subs = {}
     for d1, d2 in delimiters:
-        from mcdp_docs.latex.latex_preprocess import extract_delimited
+        from .latex.latex_preprocess import extract_delimited
         s = extract_delimited(s, d1, d2, subs, 'MYENVS')
         
     for k, v in list(subs.items()):

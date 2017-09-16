@@ -560,8 +560,12 @@ def sub_link(a, element_id, element, raise_errors):
                 label = label_name
         else:
             # default behavior
-            # label = label_what_number
-            label = label_what_number + ' - ' + label_name
+            if string_starts_with(['fig:','tab:', 'bib:', 'code:'], element_id):
+                label = label_what_number
+            elif label_name is None:
+                label = label_what_number 
+            else:
+                label = label_what_number + ' - ' + label_name
 
         frag = bs(label)
         assert frag.name == 'fragment'
@@ -569,6 +573,8 @@ def sub_link(a, element_id, element, raise_errors):
         add_class(frag, 'reflabel')
         a.append(frag)
 
+def string_starts_with(prefixes, s):
+    return any([s.startswith(_) for _ in prefixes])
 
 LinkElement = namedtuple('LinkElement', 'linker eid linked query')
 

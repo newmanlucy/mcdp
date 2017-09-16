@@ -97,8 +97,10 @@ def manual_join(template, files_contents,
         if doc_to_join.docname in basename2soup:
             msg = 'Repeated docname %r' % doc_to_join.docname
             raise ValueError(msg)
-        from mcdp_docs.latex.latex_preprocess import assert_not_inside
+        from .latex.latex_preprocess import assert_not_inside
+        assert_not_inside(doc_to_join.contents, '<fragment')
         assert_not_inside(doc_to_join.contents, 'DOCTYPE')
+        
         frag = bs(doc_to_join.contents)
         basename2soup[doc_to_join.docname] = frag
 
@@ -112,15 +114,13 @@ def manual_join(template, files_contents,
             body.append(NavigableString('\n\n'))
             body.append(Comment('Beginning of document dump of %r' % docname))
             body.append(NavigableString('\n\n'))
-#         for x in content:
-# #             x2 = x.__copy__()  # not clone, not extract, just copy
-# #             body.append(x2)
-# #             
+
         copy_contents_into(content, body)
-#             
+             
         f = body.find('fragment')
         if f:
             msg = 'I found a <fragment> in the manual after %r' % docname
+            msg += '\n\n' + indent(str(content), '> ')
             raise Exception(msg)
         
         if add_comments:

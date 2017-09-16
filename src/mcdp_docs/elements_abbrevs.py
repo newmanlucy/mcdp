@@ -17,24 +17,43 @@ def other_abbrevs(soup):
         
         <p>TODO:...</p> -> <div class="todo"><p><span>TODO:</span></p>
     """ 
+    from .task_markers import substitute_task_markers
+   
+    other_abbrevs_mcdps(soup)
+#     other_abbrevs_envs(soup)
     
+    substitute_task_markers(soup)
+    substitute_special_paragraphs(soup)
+    
+def other_abbrevs_mcdps(soup):
     translate = {
         'v': 'mcdp-value',
         'val': 'mcdp-value',
         'value': 'mcdp-value',
-        
         'pos': 'mcdp-poset',
         'poset': 'mcdp-poset',
         's': 'span',
+        
     }
-    
     for k, v in translate.items():
         for e in soup.select(k):
             e.name = v
-
-    from mcdp_docs.task_markers import substitute_task_markers
-    substitute_task_markers(soup)
-    substitute_special_paragraphs(soup)
+            
+def other_abbrevs_envs(soup):
+    translate = { 
+        'knowledge-graph': ('div', {'markdown':1, 'class':'requirements'}),
+        'example-usage': ('div', {'markdown':1, 'class':'example-usage'}),
+        'comment': ('div', {'markdown':1, 'class':'comment'}),
+        'question': ('div', {'markdown':1, 'class':'question'}),
+        'doubt': ('div', {'markdown':1, 'class':'doubt'}),
+    }
+    for oname, (name, attrs) in translate.items():
+        for e in soup.select(oname):
+            e.name = name
+            for k, v in attrs.items():
+                if not k in e.attrs:
+                    e.attrs[k] = v
+                    
     
 prefix2class = {
     'TODO: ': 'todo',
