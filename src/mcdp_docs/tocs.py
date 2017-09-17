@@ -452,9 +452,15 @@ def substituting_empty_links(soup, raise_errors=False):
     # Now mark as errors the ones that 
     for a in get_empty_links(soup):
         href = a.attrs.get('href', '(not present)')
+        if not href:
+            href = '""'
+        if href.startswith('python:'): continue
+        
         if href.startswith('http:') or href.startswith('https:'):
             msg  = """
-This link text is empty. 
+This link text is empty:
+
+    ELEMENT
 
 Note that the syntax for links in Markdown is
 
@@ -474,12 +480,17 @@ So, you need to provide some text, such as:
     [this useful website](MYURL)
             
 """
+            msg = msg.replace('ELEMENT', str(a))
             msg = msg.replace('MYURL', href)
             note_error2(a, 'syntax error', msg.strip())
             
         else:
             msg = """
-This link is empty. It might be that the writer intended for this 
+This link is empty: 
+
+    ELEMENT
+
+It might be that the writer intended for this 
 link to point to something, but they got the syntax wrong.
 
     href = %s
@@ -492,6 +503,7 @@ the syntax "#ID", such as:
     See [](#section-name).
     
 """ % href
+        msg = msg.replace('ELEMENT', str(a))
         note_error2(a, 'syntax error', msg.strip())
 #         n += 1
 #     logger.debug('substituting_empty_links: %d total, %d errors' %
