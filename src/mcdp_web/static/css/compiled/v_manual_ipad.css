@@ -2396,7 +2396,8 @@ h1[id^='part:'] {
   display: flow(part-string);
 }
 /* only in the manual */
-h1:not(#booktitle) {
+section.with-header-inside[level=sec],
+section.with-header-inside[level=part] {
   page-break-before: always;
 }
 td pre {
