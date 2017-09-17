@@ -439,7 +439,7 @@ def add_prev_next_links(filename2contents, only_for=None):
         spacer.attrs['style'] ='clear:both'
         nav1.append(spacer)
 
-        S.append(nav1.__copy__())
+        
 
         add_class(contents, 'main-section-for-page')
 
@@ -461,9 +461,12 @@ def add_prev_next_links(filename2contents, only_for=None):
 #         del contents2.attrs['id']
 
 #         assert contents.parent is None
-
-        S.append(nav1.__copy__())
-
+        # outside
+#         S.append(nav1.__copy__())
+#         S.append(nav1.__copy__())
+        contents2.insert(0, nav1.__copy__())
+        contents2.append(nav1.__copy__())
+        
         new_one[filename] = S
 
     return new_one
