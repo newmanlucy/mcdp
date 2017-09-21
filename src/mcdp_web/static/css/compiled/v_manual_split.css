@@ -761,6 +761,17 @@ details.question summary {
 details[open].question {
   background-color: #dbfce0;
 }
+@media print {
+  details.question {
+    background-color: #dbfce0;
+  }
+  details.comment {
+    background-color: #dbe8fc;
+  }
+  details.doubt {
+    background-color: pink;
+  }
+}
 details summary::before {
   content: '+';
   margin-right: 3pt;

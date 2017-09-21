@@ -82,13 +82,29 @@ details.comment, details.doubt, details.question {
 	margin-bottom: 1em;
 }
 
-details.comment summary { color: black; background-color: #dbe8fc; }
-details[open].comment { background-color: #dbe8fc; }
-details.doubt summary { color: black; background-color: pink; }
-details[open].doubt { background-color: pink; }
-details.question summary { color: black; background-color: #dbfce0; }
-details[open].question { background-color: #dbfce0; }
+@color-question: #dbfce0;
+@color-doubt: pink;
+@color-comment: #dbe8fc;
 
+details.comment summary { color: black; background-color: @color-comment; }
+details[open].comment { background-color: @color-comment; }
+details.doubt summary { color: black; background-color: @color-doubt; }
+details[open].doubt { background-color: @color-doubt; }
+details.question summary { color: black; background-color: @color-question; }
+details[open].question { background-color: @color-question; }
+
+@media print {
+
+	details.question {
+		background-color: @color-question;
+	}
+	details.comment {
+		background-color: @color-comment;
+	}
+	details.doubt {
+		background-color: @color-doubt;
+	}
+}
 
 
 details summary::before {
