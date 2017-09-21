@@ -2080,79 +2080,100 @@ a.link-to-master::after {
 code .link-to-master::after {
   display: none;
 }
-section[status=draft]::before {
-  content: 'This section is marked as draft';
-  color: red;
-  display: block;
-  text-align: right;
-  margin-top: 0.5em;
-  padding-top: 0.5em;
-  padding-right: 0.5em;
+section::before {
+  content: '';
+}
+@media print {
+  section.with-header-inside[level=sec]::before,
+  section.with-header-inside[level=part]::before {
+    page-break-before: always;
+  }
+}
+@media screen {
+  section[status=draft]::before {
+    content: 'This section is marked as draft';
+    color: red;
+    display: block;
+    text-align: right;
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+  }
 }
 section[status=draft] {
   border-right: solid 0.5em rgba(255, 0, 0, 0.2);
   padding-right: 0.5em;
 }
-section[status=beta]::before {
-  content: 'This section is marked as beta';
-  color: orange;
-  margin-top: 0.5em;
-  display: block;
-  text-align: right;
-  padding-top: 0.5em;
-  padding-right: 0.5em;
+@media screen {
+  section[status=beta]::before {
+    content: 'This section is marked as beta';
+    color: orange;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+  }
 }
 section[status=beta] {
   border-right: solid 0.5em rgba(255, 165, 0, 0.2);
   padding-right: 0.5em;
 }
-section[status=to-update]::before {
-  content: 'This section is marked as needing an update';
-  color: blue;
-  margin-top: 0.5em;
-  display: block;
-  text-align: right;
-  padding-top: 0.5em;
-  padding-right: 0.5em;
+@media screen {
+  section[status=to-update]::before {
+    content: 'This section is marked as needing an update';
+    color: blue;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+  }
 }
 section[status=to-update] {
   border-right: solid 0.5em rgba(0, 0, 255, 0.2);
   padding-right: 0.5em;
 }
-section[status=unknown][level=sec]::before {
-  content: 'This section does not have a status set';
-  color: gray;
-  margin-top: 0.5em;
-  display: block;
-  text-align: right;
-  padding-top: 0.5em;
-  padding-right: 0.5em;
+@media screen {
+  section[status=unknown][level=sec]::before {
+    content: 'This section does not have a status set';
+    color: gray;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+  }
 }
 section[status=unknown][level=sec] {
   border-right: solid 0.5em rgba(128, 128, 128, 0.2);
   padding-right: 0.5em;
 }
-section[status=recently-updated]::before {
-  content: 'This section has been recently updated (< 1 week)';
-  color: purple;
-  margin-top: 0.5em;
-  display: block;
-  text-align: right;
-  padding-top: 0.5em;
-  padding-right: 0.5em;
+@media screen {
+  section[status=recently-updated]::before {
+    content: 'This section has been recently updated (< 1 week)';
+    color: purple;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+  }
 }
 section[status=recently-updated] {
   border-right: solid 0.5em rgba(128, 0, 128, 0.2);
   padding-right: 0.5em;
 }
-section[status=deprecated]::before {
-  content: 'This section is deprecated';
-  color: purple;
-  margin-top: 0.5em;
-  display: block;
-  text-align: right;
-  padding-top: 0.5em;
-  padding-right: 0.5em;
+@media screen {
+  section[status=deprecated]::before {
+    content: 'This section is deprecated';
+    color: purple;
+    margin-top: 0.5em;
+    display: block;
+    text-align: right;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+  }
 }
 section[status=deprecated] {
   border-right: solid 0.5em rgba(128, 0, 128, 0.2);
@@ -2396,10 +2417,6 @@ h1[id^='part:'] {
   display: flow(part-string);
 }
 /* only in the manual */
-section.with-header-inside[level=sec],
-section.with-header-inside[level=part] {
-  page-break-before: always;
-}
 td pre {
   margin-top: 0 !important;
   margin: 0 !important;

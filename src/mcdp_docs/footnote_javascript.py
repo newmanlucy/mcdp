@@ -1,11 +1,13 @@
 from mcdp_utils_xml import bs
+from mcdp_utils_xml.misc import copy_contents_into
+
 
 def add_footnote_polyfill(soup):
     body = soup.find('body')
     if body is None:
         raise ValueError(str(soup))
     x = bs(footnote_javascript)
-    body.append(x)
+    copy_contents_into(x, body)
     
 footnote_javascript_old = r'''
 <style>

@@ -10,5 +10,6 @@ def soup_find_absolutely(soup, id_):
 
 
 def copy_contents_into(a, b):
+    """ Copy the contents of a into b """
     for e in a.children:
         b.append(e.__copy__())

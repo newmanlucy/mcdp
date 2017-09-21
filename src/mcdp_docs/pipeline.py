@@ -26,6 +26,7 @@ from .status import check_status_codes, check_lang_codes
 from .syntax_highlight import syntax_highlighting, strip_pre
 from .tocs import fix_ids_and_add_missing
 from .videos import make_videos
+from mcdp_docs.tocs import check_no_patently_wrong_links
 
 
 __all__ = [
@@ -201,8 +202,10 @@ def render_complete(library, s, raise_errors, realpath, generate_pdf=False,
     check_lang_codes(soup)
     
     # Fixes the IDs (adding 'sec:'); add IDs to missing ones
-    globally_unique_id_part = 'autoid-' + get_md5(s0)[:5]
+    globally_unique_id_part = 'autoid-DO-NOT-USE-THIS-VERY-UNSTABLE-LINK-' + get_md5(s0)[:5]
     fix_ids_and_add_missing(soup, globally_unique_id_part)
+    
+    check_no_patently_wrong_links(soup)
     
     s = to_html_stripping_fragment(soup)
     s = replace_macros(s)    

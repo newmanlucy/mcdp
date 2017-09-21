@@ -1115,20 +1115,32 @@ a.link-to-master {
 @section-ribbon: 0.5em;
 @section-padding: 0.5em;
 
-section[status=draft]::before {
-    content: 'This section is marked as draft';
-    color: @color-draft;
-    display: block;
-    text-align: right;
-    margin-top: 0.5em;
-    padding-top: 0.5em;
-    padding-right: 0.5em;
+section::before { content: ''; }
+
+@media print {
+    section.with-header-inside[level=sec]::before,
+    section.with-header-inside[level=part]::before {
+        page-break-before: always;
+    }
+}
+
+@media screen {
+    section[status=draft]::before {
+        content: 'This section is marked as draft';
+        color: @color-draft;
+        display: block;
+        text-align: right;
+        margin-top: 0.5em;
+        padding-top: 0.5em;
+        padding-right: 0.5em;
+    }
 }
 section[status=draft] {
     border-right: solid @section-ribbon fade(@color-draft, 20%);
     padding-right: @section-padding;
 }
 
+@media screen {
 section[status=beta]::before {
     content: 'This section is marked as beta';
     color: @color-beta;
@@ -1138,12 +1150,13 @@ section[status=beta]::before {
     padding-top: 0.5em;
     padding-right: 0.5em;
 }
+}
 section[status=beta] {
     border-right: solid @section-ribbon fade(@color-beta, 20%);
     padding-right: @section-padding;
 }
 
-
+@media screen {
 section[status=to-update]::before {
     content: 'This section is marked as needing an update';
     color: @color-to-update;
@@ -1153,11 +1166,13 @@ section[status=to-update]::before {
     padding-top: 0.5em;
     padding-right: 0.5em;
 }
+}
 section[status=to-update] {
     border-right: solid @section-ribbon fade(@color-to-update, 20%);
     padding-right: @section-padding;
 }
 
+@media screen {
 section[status=unknown][level=sec]::before {
     content: 'This section does not have a status set';
     color: @color-unknown;
@@ -1167,12 +1182,13 @@ section[status=unknown][level=sec]::before {
     padding-top: 0.5em;
     padding-right: 0.5em;
 }
+}
 section[status=unknown][level=sec] {
     border-right: solid @section-ribbon fade(@color-unknown, 20%);
     padding-right: @section-padding;
 }
 
-
+@media screen {
 section[status=recently-updated]::before {
     content: 'This section has been recently updated (< 1 week)';
     color: @color-recently-updated;
@@ -1182,12 +1198,13 @@ section[status=recently-updated]::before {
     padding-top: 0.5em;
     padding-right: 0.5em;
 }
+}
 section[status=recently-updated] {
     border-right: solid @section-ribbon fade(@color-recently-updated, 20%);
     padding-right: @section-padding;
 }
 
-
+@media screen {
 section[status=deprecated]::before {
     content: 'This section is deprecated';
     color: @color-deprecated;
@@ -1196,6 +1213,7 @@ section[status=deprecated]::before {
     text-align: right;
     padding-top: 0.5em;
     padding-right: 0.5em;
+}
 }
 section[status=deprecated] {
     border-right: solid @section-ribbon fade(@color-deprecated, 20%);
