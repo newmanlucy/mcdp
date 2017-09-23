@@ -86,7 +86,9 @@ def check_if_any_href_is_invalid(soup):
             
             possible = ['part', 'sec', 'sub', 'subsub', 'fig', 'tab', 'code', 'app', 'appsub',
                         'appsubsub',
-                        'def', 'eq', 'rem', 'lem', 'prob', 'prop', 'exa', 'thm' ]
+                        'def', 'eq', 'rem', 'lem', 'prob', 'prop', 'exa', 'thm',
+#                         'bib' 
+                        ]
             matches = [] 
             others = []
             for possible_prefix in possible:
@@ -114,7 +116,8 @@ def check_if_any_href_is_invalid(soup):
                  
             else:
                 short = 'Ref. error'
-                msg = 'Not found %r (also tried %s)' % (href, ", ".join(others))
+#                 msg = 'Not found %r (also tried %s)' % (href, ", ".join(others))
+                msg = 'I do not know the link that is indicated by the link %r.' % href
                 note_error2(a, short, msg, ['href-invalid', 'href-invalid-missing'])
                 errors.append(msg)
                     

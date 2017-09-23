@@ -10,6 +10,8 @@ git.cmd.log.disabled = True
 
 from .logs import logger
 
+import pint, logging
+
 if MCDPConstants.softy_mode:
     if getpass.getuser() == 'andrea':
         logger.error('Remember this might break MCDP')
