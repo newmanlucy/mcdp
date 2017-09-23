@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from .logs import logger
 import os
+from compmake.utils.friendly_path_imp import friendly_path
 
 def embed_css_files(soup):
     """ Look for <link> elements of CSS and embed them if they are local files"""
@@ -17,11 +18,12 @@ def embed_css_files(soup):
             filename = None
             
         if filename is not None:
-            logger.info('Embedding %r' % filename)
+            
             if not os.path.exists(filename):
                 msg = 'Cannot find CSS file %s' % filename
                 logger.error(msg)
             else:
+                logger.info('Embedding %r' % friendly_path(filename))
                 data = open(filename).read()
                 style = Tag(name='style')
                 style.attrs['type'] = 'text/css'
