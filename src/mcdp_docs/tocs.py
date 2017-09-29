@@ -26,6 +26,10 @@ class GlobalCounter:
     header_id = 1
 
 
+def fix_ids_and_add_missing(soup, globally_unique_id_part):
+    for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
+        fix_header_id(h, globally_unique_id_part)
+
 def fix_header_id(header, globally_unique_id_part):
     ID = header.get('id', None)
     prefix = None if (ID is None or not ':' in ID) else ID[:ID.index(':')]
@@ -65,6 +69,10 @@ def fix_ids_and_add_missing(soup, globally_unique_id_part):
         fix_header_id(h, globally_unique_id_part)
 
 
+
+class InvalidHeaders(ValueError):
+    pass
+
 def get_things_to_index(soup):
     """
         nothing with attribute "notoc"
@@ -82,7 +90,12 @@ def get_things_to_index(soup):
             continue
 
         if h.name in ['h1', 'h2', 'h3', 'h4']:
-            #             fix_header_id(h)
+            if not 'id' in h.attrs:
+                msg = 'This header does not have an ID set.'
+                msg +='\n header: ' + str(h)
+                msg +='\nThe function fix_ids_and_add_missing() adds missing IDs.'
+                raise InvalidHeaders(msg)
+
             h_id = h.attrs['id']
             if h.name == 'h1':
                 if h_id.startswith('part:'):
@@ -92,7 +105,10 @@ def get_things_to_index(soup):
                 elif h_id.startswith('sec:'):
                     depth = 3
                 else:
-                    raise ValueError(h)
+                    msg = 'I expected that this header would start with either part:,app:,sec:.'
+                    msg += '\n' + str(h)
+                    msg +='\nThe function fix_ids_and_add_missing() adds missing IDs and fixes them.'
+                    raise InvalidHeaders(msg)
             elif h.name == 'h2':
                 depth = 4
             elif h.name == 'h3':
@@ -441,46 +457,46 @@ def check_no_patently_wrong_links(soup):
 This link is invalid:
 
     URL = %s
-    
+
 I think there is an extra "#" at the beginning.
 
 Note that the Markdown syntax is:
 
-    [description](URL) 
-    
+    [description](URL)
+
 where URL can be:
 
-    1) using the fragment notation, such as 
-    
-        URL = '#SECTIONID'     
-        
+    1) using the fragment notation, such as
+
+        URL = '#SECTIONID'
+
     for example:
-    
+
         Look at [the section](#section-name)
-        
-    
+
+
     2) a regular URL, such as:
-    
+
         URL = 'http://google.com'
-    
+
     that is:
-    
+
         Look at [the website](http://google.com)
-    
 
-You have mixed the two syntaxes. 
 
-You probably meant to write the url 
+You have mixed the two syntaxes.
 
-    %s 
+You probably meant to write the url
+
+    %s
 
 but you added an extra "#" at the beginning that should have not been there.
 
 Please remove the "#".
- 
+
             """ % (href, href[1:])
             note_error2(a, 'syntax error', msg.lstrip())
-            
+
 def substituting_empty_links(soup, raise_errors=False):
     '''
 
@@ -494,7 +510,7 @@ def substituting_empty_links(soup, raise_errors=False):
 
 #     logger.debug('substituting_empty_links')
 
-  
+
 
 #     n = 0
     for le in get_empty_links_to_fragment(soup):
@@ -529,11 +545,11 @@ system can fill in the title automatically, leading to the format:
 However, this does not work for external sites, such as:
 
     [](MYURL)
-    
+
 So, you need to provide some text, such as:
 
     [this useful website](MYURL)
-            
+
 """
             msg = msg.replace('ELEMENT', str(a))
             msg = msg.replace('MYURL', href)
@@ -541,22 +557,22 @@ So, you need to provide some text, such as:
 
         else:
             msg = """
-This link is empty: 
+This link is empty:
 
     ELEMENT
 
-It might be that the writer intended for this 
+It might be that the writer intended for this
 link to point to something, but they got the syntax wrong.
 
     href = %s
-    
+
 As a reminder, to refer to other parts of the document, use
-the syntax "#ID", such as: 
+the syntax "#ID", such as:
 
     See [](#fig:my-figure).
-    
+
     See [](#section-name).
-    
+
 """ % href
         msg = msg.replace('ELEMENT', str(a))
         note_error2(a, 'syntax error', msg.strip())

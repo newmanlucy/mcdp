@@ -6,6 +6,7 @@ from mcdp_utils_xml import bs, has_class
 
 from bs4.element import NavigableString, Tag
 from contracts import contract
+from mcdp.constants import MCDPConstants
 
 
 # What is recognized as a program name
@@ -154,7 +155,7 @@ def link_to_command_explanation_check3():
     soup = bs(s)
     link_to_command_explanation(soup)
     s2 = str(soup)
-    print s2
+#     print s2
     assert '<a href="#ifconfig"' in s2
     
 
@@ -177,7 +178,7 @@ def mark_console_pres_defaults(soup):
 def replace_template(element):
     for t in element.children:
         if isinstance(t, NavigableString):
-            if '![' in t:
+            if MCDPConstants.placeholder_marker_start in t:
                 
                 if False:
                     msg = "Do not copy and paste. "
@@ -201,12 +202,12 @@ def join_successive_strings(e):
             children[i+1].extract()
             join_successive_strings(e)
             return
-    
+
 def process_ns(t):
     s = t + ''
 #     logger.debug('Handling %r' % t)
-    marker = '!['
-    marker2 = ']'
+    marker = MCDPConstants.placeholder_marker_start
+    marker2 = MCDPConstants.placeholder_marker_end
     if marker not in s:
         return
     
