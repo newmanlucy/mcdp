@@ -7,7 +7,6 @@ from contracts.utils import check_isinstance
 import shutil
 from mcdp import logger
 from contextlib import contextmanager
-import warnings
 
 __all__ = ['create_hierarchy']
 
