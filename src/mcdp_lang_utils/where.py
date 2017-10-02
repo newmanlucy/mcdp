@@ -45,7 +45,7 @@ class Where(object):
                 raise_desc(ValueError, msg, string=string.__repr__())
 
             if not (character_end >= character):
-                msg=  'Invalid interval [%d:%d]' % (character, character_end)
+                msg = 'Invalid interval [%d:%d]' % (character, character_end)
                 raise ValueError(msg)
 
             self.line_end, self.col_end = line_and_col(character_end, string)
