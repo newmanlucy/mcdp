@@ -13,6 +13,7 @@ from .tags_in_titles import *
 from .task_markers_test import *
 from .make_console_pre_tests import *
 from .composing_test import *
+from .biblio import *
 
 def jobs_comptests(context):
     # instantiation

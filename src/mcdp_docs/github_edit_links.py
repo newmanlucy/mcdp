@@ -4,8 +4,9 @@ import os, re
 
 from git.repo.base import Repo
 from contracts.utils import raise_wrapped
+from mcdp_utils_misc.memoize_simple_imp import memoize_simple
 
-
+@memoize_simple
 def get_repo_root(d):
     ''' Returns the root of the repo root, or raise ValueError. '''
     if os.path.exists(os.path.join(d, '.git')):
@@ -51,6 +52,7 @@ def add_edit_links(soup, filename):
 class RepoInfoException(Exception):
     pass
 
+@memoize_simple
 def get_repo_information(repo_root):
     """ Returns a dictionary with fields branch, commit, org, repo 
     

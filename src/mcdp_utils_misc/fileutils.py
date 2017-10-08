@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import codecs
 from contextlib import contextmanager
+import os
 import shutil
 from tempfile import mkdtemp, NamedTemporaryFile
-from mcdp_utils_misc.path_utils import expand_all
-from compmake.utils.filesystem_utils import make_sure_dir_exists
-import os
-from compmake.utils.friendly_path_imp import friendly_path
+
+from compmake.utils import friendly_path, make_sure_dir_exists
+from mcdp import logger
+from .path_utils import expand_all
 
 
 def get_mcdp_tmp_dir():
@@ -14,7 +15,6 @@ def get_mcdp_tmp_dir():
 	Note that we need to customize with username, otherwise
 	there will be permission problems.  """
     from tempfile import gettempdir
-    import os
     d0 = gettempdir()
     import getpass
     username = getpass.getuser()
@@ -61,7 +61,7 @@ def read_file_encoded_as_utf8(filename):
     s = u.encode('utf-8')
     return s
 
-from mcdp import logger
+
 def write_data_to_file(data, filename):
     """ 
         Writes the data to the given filename. 
