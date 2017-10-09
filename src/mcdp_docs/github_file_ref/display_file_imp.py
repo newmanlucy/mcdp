@@ -7,8 +7,7 @@ from mcdp.exceptions import DPSemanticError
 from mcdp_utils_xml import note_error2
 
 from .reference import parse_github_file_ref
-from .substitute_github_refs_i import resolve_reference, \
-    CouldNotResolveRef
+from .substitute_github_refs_i import resolve_reference, CouldNotResolveRef
 
 
 def display_files(soup, defaults, raise_errors):

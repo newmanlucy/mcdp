@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from contracts import contract
 from getpass import getuser
 import itertools
+
+from contracts import contract
+from contracts.utils import raise_desc, indent
 from mcdp import logger
 from mcdp.constants import MCDPConstants
 from mcdp.exceptions import DPInternalError
@@ -9,8 +11,6 @@ from mcdp_library import MCDPLibrary
 from mcdp_report.gg_utils import embed_images_from_library2
 from mcdp_utils_misc import get_md5
 from mcdp_utils_xml import to_html_stripping_fragment, bs, describe_tag
-
-from contracts.utils import raise_desc, indent
 
 from .check_missing_links import check_if_any_href_is_invalid, fix_subfig_references
 from .elements_abbrevs import check_good_use_of_special_paragraphs
@@ -21,13 +21,13 @@ from .lessc import run_lessc
 from .macros import replace_macros
 from .make_console_pre import mark_console_pres
 from .make_figures import make_figure_from_figureid_attr
+from .manual_constants import MCDPManualConstants
 from .prerender_math import escape_for_mathjax_back, escape_for_mathjax
 from .status import check_status_codes, check_lang_codes
 from .syntax_highlight import syntax_highlighting, strip_pre
+from .tocs import check_no_patently_wrong_links
 from .tocs import fix_ids_and_add_missing
 from .videos import make_videos
-from .tocs import check_no_patently_wrong_links
-from .manual_constants import MCDPManualConstants
 
 
 __all__ = [

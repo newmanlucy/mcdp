@@ -38,6 +38,7 @@ class RenderManual(QuickApp):
         params.add_string('stylesheet', help='Stylesheet', default=None)
         params.add_int('mathjax', help='Use MathJax (requires node)', default=1)
         params.add_string('symbols', help='.tex file for MathJax', default=None)
+        params.add_flag('raise_errors', help='If given, fail the compilation on errors')
         params.add_flag('cache')
         params.add_flag('pdf', help='Generate PDF version of code and figures.')
         params.add_string('remove', help='Remove the items with the given selector (so it does not mess indexing)',
@@ -55,6 +56,7 @@ class RenderManual(QuickApp):
 
 #         src_dirs = [expand_all(_) for _ in src_dirs]
 
+        raise_errors = options.raise_errors
         out_dir = options.output
         generate_pdf = options.pdf
         output_file = options.output_file
@@ -86,6 +88,7 @@ class RenderManual(QuickApp):
                     stylesheet=stylesheet,
                     remove=remove,
                     use_mathjax=use_mathjax,
+                    raise_errors=raise_errors,
                     symbols=symbols,
                     resolve_references=resolve_references
                     )
@@ -139,7 +142,7 @@ def look_for_files(srcdirs, pattern):
  
 @contract(src_dirs='seq(str)')
 def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
-                use_mathjax, resolve_references=True,
+                use_mathjax, raise_errors, resolve_references=True,
                 remove=None, filter_soup=None, extra_css=None, symbols=None):
     """
         src_dirs: list of sources
@@ -181,6 +184,7 @@ def manual_jobs(context, src_dirs, output_file, generate_pdf, stylesheet,
                                    data=contents, realpath=filename,
                                    use_mathjax=use_mathjax,
                                    symbols=symbols,
+                                    raise_errors=raise_errors,
                                    main_file=output_file,
                                    out_part_basename=out_part_basename,
                                    filter_soup=filter_soup,
@@ -291,7 +295,9 @@ def write(s, out):
 
 def render_book(src_dir, generate_pdf,
                 data, realpath,
-                main_file, use_mathjax, out_part_basename, filter_soup=None,
+                main_file, use_mathjax, out_part_basename, 
+                raise_errors,
+                 filter_soup=None,
                 extra_css=None, symbols=None):
     from mcdp_docs.pipeline import render_complete
 
@@ -321,7 +327,7 @@ def render_book(src_dir, generate_pdf,
     try:
         html_contents = render_complete(library=library,
                                     s=data,
-                                    raise_errors=True,
+                                    raise_errors=raise_errors,
                                     realpath=realpath,
                                     use_mathjax=use_mathjax,
                                     symbols=symbols,
