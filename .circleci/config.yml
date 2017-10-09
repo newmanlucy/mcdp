@@ -40,7 +40,7 @@ jobs:
 
                 pip install pympler
 
-                pip install git+https://github.com/AndreaCEnsi/mcdp.git@mcdp
+                pip install git+https://github.com/AndreaCensi/compmake.git@mcdp
 
                 pip install compmake==3.5.12
 
