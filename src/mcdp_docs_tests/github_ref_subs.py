@@ -18,7 +18,7 @@ def displayfile1():
 <display-file src="github:path=context_eval_as_constant.py,from_text=get_connections_for,to_text=return"></a> 
 """
     soup = bs(s)
-    n = display_files(soup, defaults)
+    n = display_files(soup, defaults, raise_errors=True)
     assert n == 1
     
     s2 = str(soup)
@@ -37,7 +37,7 @@ from_text=get_connections_for,
 to_text=return"></a> 
 """
     soup = bs(s)
-    n = display_files(soup, defaults)
+    n = display_files(soup, defaults, raise_errors=True)
     assert n == 1
     
     s2 = str(soup)
