@@ -39,6 +39,9 @@ jobs:
                 python setup.py develop
 
                 pip install pympler
+
+                pip install git+https://github.com/AndreaCEnsi/mcdp.git@mcdp
+
                 pip install compmake==3.5.12
 
         - run:
