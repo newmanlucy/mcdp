@@ -38,8 +38,9 @@ jobs:
             command: |
                 python setup.py develop
 
-                pip install compmake==3.5.6
-                
+                pip install pympler
+                pip install compmake==3.5.12
+
         - run:
             name: Make sure things are ok
             command:  |
