@@ -38,7 +38,8 @@ jobs:
             command: |
                 python setup.py develop
 
-
+                pip install compmake==3.5.6
+                
         - run:
             name: Make sure things are ok
             command:  |
@@ -48,10 +49,10 @@ jobs:
                 /usr/bin/nodejs --version
                 /usr/bin/npm --version
                 python --version
-                python -c "import numpy; print numpy.__version__"
-                python -c "import matplotlib; print matplotlib.__version__"
-                python -c "import compmake; print compmake.__version__"
-                python -c "import contracts; print contracts.__version__"
+                python -c "import numpy; print 'numpy: %s' % numpy.__version__"
+                python -c "import matplotlib; print 'matplotlib: %s' % matplotlib.__version__"
+                python -c "import compmake; print 'compmake: %s' % compmake.__version__"
+                python -c "import contracts; print 'contracts: %s' % contracts.__version__"
                 fc-list | sort
                 cp misc/unittests-compmake.rc .compmake.rc
                 cat .compmake.rc
