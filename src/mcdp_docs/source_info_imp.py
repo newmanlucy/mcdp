@@ -88,6 +88,14 @@ def make_last_modified(files_contents, nmax=100):
 #     print s
     return s
 
+def get_first_header_title(soup):
+    ''' returns attribute label-name '''
+    a = 'label-name'
+    for e in soup.find_all(['h1','h2','h3']):
+        if a in e.attrs:
+            return e.attrs[a]
+    return None
+
 def get_main_header(s):
     """ 
         Gets an ID to use as reference for the file.

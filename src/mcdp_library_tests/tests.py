@@ -15,6 +15,9 @@ import tempfile
 
 from contracts.enabling import all_disabled
 from contracts.utils import raise_desc, raise_wrapped
+from mcdp_lang.annotations import gives_syntax_error,\
+    gives_not_implemented_error, gives_semantic_error
+from mcdp_utils_misc.reflection import accepts_arg
 
 
 # XXX: move sooner
@@ -288,11 +291,6 @@ def mcdplib_test_setup_spec(context, spec_name, libname):
                         c.comp_dynamic(ftest, thing_name, thing)
                      
     
-def accepts_arg(f, name):
-    """ True if the function f supports the "name" argument """
-    import inspect
-    args = inspect.getargspec(f)
-    return name in args.args
 
 def mcdplib_test_setup_sources(context, libname):
     from mcdp_tests import load_tests_modules
@@ -345,21 +343,6 @@ def mcdplib_test_setup_sources_(context, libname, l, extensions, accumulator):
                     kwargs['libname'] = libname
                 c.comp(ftest, filename, source, **kwargs)
 
-def get_keywords(source):
-    line1 = source.split('\n')[0]
-    return line1.split()
-
-def gives_semantic_error(source):
-    keywords = get_keywords(source)
-    return 'semantic_error' in keywords
-
-def gives_not_implemented_error(source):
-    keywords = get_keywords(source)
-    return 'not_implemented_error' in keywords
-
-def gives_syntax_error(source):
-    keywords = get_keywords(source)
-    return 'syntax_error' in keywords
 
 def mcdplib_assert_not_implemented_error_fn(libname, model_name):
     l = get_test_library(libname)

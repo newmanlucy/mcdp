@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
-import tempfile
-from mcdp_utils_misc.fileutils import get_mcdp_tmp_dir
-from mcdp_utils_misc.locate_files_imp import locate_files
-from contracts.utils import check_isinstance
-import shutil
-from mcdp import logger
+from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
-import warnings
+import os
+import shutil
+import tempfile
 
-__all__ = ['create_hierarchy']
+from contracts.utils import check_isinstance
+from mcdp import logger
+
+from .fileutils import get_mcdp_tmp_dir, write_data_to_file
+from .locate_files_imp import locate_files
+
 
 def remove_tree_contents(dirname):
     """ Removes all under dirname, but not dirname itself. """
@@ -48,11 +49,12 @@ def write_hierarchy(where, files0):
     for filename, contents in flattened.items():
         check_isinstance(contents, str)
         fn = os.path.join(where, filename)
-        dn = os.path.dirname(fn)
-        if not os.path.exists(dn):
-            os.makedirs(dn)
-        with open(fn, 'w') as f:
-            f.write(contents)
+        write_data_to_file(contents, fn)
+#         dn = os.path.dirname(fn)
+#         if not os.path.exists(dn):
+#             os.makedirs(dn)
+#         with open(fn, 'w') as f:
+#             f.write(contents)
             
 def read_hierarchy(where):
     # read all files
@@ -83,7 +85,6 @@ def mockup_flatten(d):
             res[k] = v
     return res
 
-from collections import defaultdict
 
 def unflatten(x):
     def empty():
@@ -122,8 +123,18 @@ def with_dir_content(data, use_dir=None):
             f1: |
                 contents of f1
     """
+    if isinstance(data, str):
+        datas = [data]
+    elif isinstance(data, list):
+        datas = data
+    else:
+        raise Exception()
+    
     import yaml
-    files = mockup_flatten(yaml.load(data))
+    files = OrderedDict()
+    for d in datas:
+        data_files = mockup_flatten(yaml.load(d))
+        files.update(data_files)
     
     if use_dir is not None:
         remove_tree_contents(use_dir)

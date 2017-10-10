@@ -1,15 +1,16 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from collections import OrderedDict, namedtuple
-from contracts import contract
 import json
-from mcdp.logs import logger
-from mcdp_utils_xml import add_class, bs
 import sys
 
 from bs4 import BeautifulSoup
 from bs4.element import Comment, Tag, NavigableString
+
+from contracts import contract
 from contracts.utils import raise_desc, indent, check_isinstance
+from mcdp.logs import logger
+from mcdp_utils_xml import add_class, bs, copy_contents_into
 
 from .footnote_javascript import add_footnote_polyfill
 from .macros import replace_macros
@@ -18,9 +19,6 @@ from .moving_copying_deleting import move_things_around
 from .read_bibtex import extract_bibtex_blocks
 from .tocs import generate_toc, substituting_empty_links, LABEL_WHAT_NUMBER, \
     LABEL_WHAT_NUMBER_NAME, LABEL_WHAT, LABEL_NUMBER, LABEL_NAME, LABEL_SELF
-from mcdp_utils_xml.misc import copy_contents_into
-
-
 
 
 def get_manual_css_frag():
@@ -97,8 +95,10 @@ def manual_join(template, files_contents,
         if doc_to_join.docname in basename2soup:
             msg = 'Repeated docname %r' % doc_to_join.docname
             raise ValueError(msg)
-        from mcdp_docs.latex.latex_preprocess import assert_not_inside
+        from .latex.latex_preprocess import assert_not_inside
+        assert_not_inside(doc_to_join.contents, '<fragment')
         assert_not_inside(doc_to_join.contents, 'DOCTYPE')
+        
         frag = bs(doc_to_join.contents)
         basename2soup[doc_to_join.docname] = frag
 
@@ -112,15 +112,13 @@ def manual_join(template, files_contents,
             body.append(NavigableString('\n\n'))
             body.append(Comment('Beginning of document dump of %r' % docname))
             body.append(NavigableString('\n\n'))
-#         for x in content:
-# #             x2 = x.__copy__()  # not clone, not extract, just copy
-# #             body.append(x2)
-# #             
+
         copy_contents_into(content, body)
-#             
+             
         f = body.find('fragment')
         if f:
             msg = 'I found a <fragment> in the manual after %r' % docname
+            msg += '\n\n' + indent(str(content), '> ')
             raise Exception(msg)
         
         if add_comments:
@@ -439,31 +437,26 @@ def add_prev_next_links(filename2contents, only_for=None):
         spacer.attrs['style'] ='clear:both'
         nav1.append(spacer)
 
-        S.append(nav1.__copy__())
+        
 
         add_class(contents, 'main-section-for-page')
-
-#         contents2 = contents.__copy__()
-        #contents2 = bs(str(contents))
+ 
         contents2 = contents
         S.append(contents2)
-        #section_id = contents2.attrs['id']
-        from mcdp_docs.source_info_imp import get_main_header
+
+        from .source_info_imp import get_main_header
         actual_id = get_main_header(contents2)
-        #section_id.replace(':section', '')
+
         e = contents2.find(id=actual_id)
-        if e is not None:
-#             del e.attrs['id']
+        if e is not None: 
             pass
         else:
             logger.error('not found %r' % actual_id)
         S.attrs['id'] = actual_id
-#         del contents2.attrs['id']
 
-#         assert contents.parent is None
-
-        S.append(nav1.__copy__())
-
+        contents2.insert(0, nav1.__copy__())
+        contents2.append(nav1.__copy__())
+        
         new_one[filename] = S
 
     return new_one

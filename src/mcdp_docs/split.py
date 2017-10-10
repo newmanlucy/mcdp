@@ -16,6 +16,7 @@ from .extract_assets import extract_assets_from_file
 from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filename, create_link_base
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
+from mcdp_docs.source_info_imp import get_first_header_title
 
 
 show_timing = False
@@ -49,7 +50,14 @@ def make_page(contents, head0, main_toc):
             toc.extract()
             del toc.attrs['id']
             tocdiv.append(toc)
-            
+
+    section_name = get_first_header_title(contents)
+    if section_name is not None:
+        title = head.find('title')
+        title2 = bs(section_name)
+        title2.name = 'title'
+        title.replace_with(title2)
+    
     body.append(tocdiv)
     not_toc = Tag(name='div')
     not_toc.attrs['id'] = 'not-toc'

@@ -68,7 +68,7 @@ def dpconnect(name2dp, connections, split=[]):
 
     # First, we need to order the dps using topological sorting
     try:
-        order = order_dps(name2dp, connections)
+        order = list(order_dps(name2dp, connections))
     except NetworkXUnfeasible:
         raise TheresALoop()
 

@@ -45,7 +45,7 @@ class Where(object):
                 raise_desc(ValueError, msg, string=string.__repr__())
 
             if not (character_end >= character):
-                msg=  'Invalid interval [%d:%d]' % (character, character_end)
+                msg = 'Invalid interval [%d:%d]' % (character, character_end)
                 raise ValueError(msg)
 
             self.line_end, self.col_end = line_and_col(character_end, string)
@@ -85,7 +85,7 @@ class Where(object):
 
 # mark = 'here or nearby'
 def format_where(w, context_before=3, mark=None, arrow=True,
-                 use_unicode=True, no_mark_arrow_if_longer_than=3):
+                 use_unicode=True, no_mark_arrow_if_longer_than=3, line_numbers=True):
 
     TAB_VISIBLE_CHAR = '¬'
     # hack for tabs
@@ -100,7 +100,12 @@ def format_where(w, context_before=3, mark=None, arrow=True,
 
     lines = w.string.split('\n')
     start = max(0, w.line - context_before)
-    pattern = 'line %2d |'
+    
+    def get_prefix(line):
+        if line_numbers:
+            return  'line %2d |' % line
+        else:
+            return ''
     i = 0
     maxi = i + 1
     assert 0 <= w.line < len(lines), (w.character, w.line,  w.string.__repr__())
@@ -111,10 +116,12 @@ def format_where(w, context_before=3, mark=None, arrow=True,
         # suppress empty lines
         if one_written or lines[i].strip():
             lines[i] = lines[i].replace('\t', TAB_VISIBLE_CHAR)
-            s += ("%s%s\n" % (pattern % (i+1), lines[i]))
+            
+            pattern_i = get_prefix(i+1)
+            s += ("%s%s\n" % (pattern_i, lines[i]))
             one_written = True
 
-    fill = len(pattern % maxi)
+    fill = len(get_prefix(maxi))
 
     # select the space before the string in the same column
     char0 = location(w.line, 0, w.string) # from col 0

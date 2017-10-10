@@ -1,5 +1,5 @@
 import numpy as np
-import getpass
+
 
 __all__ = ['MCDPConstants']
 
@@ -212,4 +212,8 @@ class MCDPConstants(object):
     
     softy_mode = True
     preprocess_style_using_less = False
+    
+    
+    placeholder_marker_start = '!['
+    placeholder_marker_end = ']'
     

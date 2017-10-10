@@ -26,6 +26,10 @@ class GlobalCounter:
     header_id = 1
 
 
+def fix_ids_and_add_missing(soup, globally_unique_id_part):
+    for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
+        fix_header_id(h, globally_unique_id_part)
+
 def fix_header_id(header, globally_unique_id_part):
     ID = header.get('id', None)
     prefix = None if (ID is None or not ':' in ID) else ID[:ID.index(':')]
@@ -42,7 +46,8 @@ def fix_header_id(header, globally_unique_id_part):
         default_prefix = allowed_prefixes[0]
 
         if ID is None:
-            header['id'] = '%s:%s-%s' % (default_prefix, globally_unique_id_part, GlobalCounter.header_id)
+            header[
+                'id'] = '%s:%s-%s' % (default_prefix, globally_unique_id_part, GlobalCounter.header_id)
             GlobalCounter.header_id += 1
         else:
             if prefix is None:
@@ -58,9 +63,10 @@ def fix_header_id(header, globally_unique_id_part):
                     logger.error(msg)
                     header.insert_after(Comment('Error: ' + msg))
 
-def fix_ids_and_add_missing(soup, globally_unique_id_part):
-    for h in soup.findAll(['h1', 'h2', 'h3', 'h4']):
-        fix_header_id(h, globally_unique_id_part)
+
+
+class InvalidHeaders(ValueError):
+    pass
 
 def get_things_to_index(soup):
     """
@@ -79,7 +85,12 @@ def get_things_to_index(soup):
             continue
 
         if h.name in ['h1', 'h2', 'h3', 'h4']:
-#             fix_header_id(h)
+            if not 'id' in h.attrs:
+                msg = 'This header does not have an ID set.'
+                msg +='\n header: ' + str(h)
+                msg +='\nThe function fix_ids_and_add_missing() adds missing IDs.'
+                raise InvalidHeaders(msg)
+
             h_id = h.attrs['id']
             if h.name == 'h1':
                 if h_id.startswith('part:'):
@@ -89,7 +100,10 @@ def get_things_to_index(soup):
                 elif h_id.startswith('sec:'):
                     depth = 3
                 else:
-                    raise ValueError(h)
+                    msg = 'I expected that this header would start with either part:,app:,sec:.'
+                    msg += '\n' + str(h)
+                    msg +='\nThe function fix_ids_and_add_missing() adds missing IDs and fixes them.'
+                    raise InvalidHeaders(msg)
             elif h.name == 'h2':
                 depth = 4
             elif h.name == 'h3':
@@ -169,8 +183,8 @@ def generate_toc(soup, max_depth=None):
 #
 #     logger.debug('toc done iterating')
     exclude = ['subsub', 'fig', 'code', 'tab', 'par', 'subfig',
-                'appsubsub',
-                        'def', 'eq', 'rem', 'lem', 'prob', 'prop', 'exa', 'thm' ]
+               'appsubsub',
+               'def', 'eq', 'rem', 'lem', 'prob', 'prop', 'exa', 'thm']
     without_levels = root.copy_excluding_levels(exclude)
     res = without_levels.to_html(root=True, max_levels=13)
     return res
@@ -246,6 +260,7 @@ Label = namedtuple('Label', 'what number label_self')
 
 Style = namedtuple('Style', 'resets labels')
 
+
 def get_style_book():
 
     resets = {
@@ -295,6 +310,7 @@ def get_style_book():
     }
     return Style(resets, labels)
 
+
 def get_style_duckietown():
     resets = {
         'part': ['sec'],
@@ -317,7 +333,6 @@ def get_style_duckietown():
         'prob': [],
         'thm': [],
     }
-
 
     labels = {
         'part': Label('Part', '${part|upper-alpha}', ''),
@@ -344,6 +359,7 @@ def get_style_duckietown():
     }
 
     return Style(resets, labels)
+
 
 def number_items2(root):
     counters = set(['part', 'app', 'sec', 'sub', 'subsub', 'appsub', 'appsubsub', 'par']
@@ -428,12 +444,58 @@ def render(s, counter_state):
         s = s.replace(k, v)
     return s
 
+def check_no_patently_wrong_links(soup):
+    for a in soup.select('a[href]'):
+        href = a.attrs['href']
+        if href.startswith('#http:') or href.startswith('#https:'):
+            msg  = """
+This link is invalid:
+
+    URL = %s
+
+I think there is an extra "#" at the beginning.
+
+Note that the Markdown syntax is:
+
+    [description](URL)
+
+where URL can be:
+
+    1) using the fragment notation, such as
+
+        URL = '#SECTIONID'
+
+    for example:
+
+        Look at [the section](#section-name)
+
+
+    2) a regular URL, such as:
+
+        URL = 'http://google.com'
+
+    that is:
+
+        Look at [the website](http://google.com)
+
+
+You have mixed the two syntaxes.
+
+You probably meant to write the url
+
+    %s
+
+but you added an extra "#" at the beginning that should have not been there.
+
+Please remove the "#".
+
+            """ % (href, href[1:])
+            note_error2(a, 'syntax error', msg.lstrip())
 
 def substituting_empty_links(soup, raise_errors=False):
     '''
 
         default style is [](#sec:systems)  "Chapter 10"
-
 
         You can also use "class":
 
@@ -443,16 +505,75 @@ def substituting_empty_links(soup, raise_errors=False):
 
 #     logger.debug('substituting_empty_links')
 
+
+
 #     n = 0
     for le in get_empty_links_to_fragment(soup):
         a = le.linker
         element_id = le.eid
         element = le.linked
         sub_link(a, element_id, element, raise_errors)
+
+    # Now mark as errors the ones that
+    for a in get_empty_links(soup):
+        href = a.attrs.get('href', '(not present)')
+        if not href:
+            href = '""'
+        if href.startswith('python:'):
+            continue
+
+        if href.startswith('http:') or href.startswith('https:'):
+            msg  = """
+This link text is empty:
+
+    ELEMENT
+
+Note that the syntax for links in Markdown is
+
+    [link text](URL)
+
+For the internal links (where URL starts with "#"), then the documentation
+system can fill in the title automatically, leading to the format:
+
+    [](#other-section)
+
+However, this does not work for external sites, such as:
+
+    [](MYURL)
+
+So, you need to provide some text, such as:
+
+    [this useful website](MYURL)
+
+"""
+            msg = msg.replace('ELEMENT', str(a))
+            msg = msg.replace('MYURL', href)
+            note_error2(a, 'syntax error', msg.strip())
+
+        else:
+            msg = """
+This link is empty:
+
+    ELEMENT
+
+It might be that the writer intended for this
+link to point to something, but they got the syntax wrong.
+
+    href = %s
+
+As a reminder, to refer to other parts of the document, use
+the syntax "#ID", such as:
+
+    See [](#fig:my-figure).
+
+    See [](#section-name).
+
+""" % href
+        msg = msg.replace('ELEMENT', str(a))
+        note_error2(a, 'syntax error', msg.strip())
 #         n += 1
 #     logger.debug('substituting_empty_links: %d total, %d errors' %
 #                  (n, nerrors))
-
 
 
 def sub_link(a, element_id, element, raise_errors):
@@ -466,7 +587,7 @@ def sub_link(a, element_id, element, raise_errors):
 
     if not element:
         msg = ('Cannot find %s' % element_id)
-        note_error2(a, 'Ref. error', 'substituting_empty_links():\n'+msg)
+        note_error2(a, 'Ref. error', 'substituting_empty_links():\n' + msg)
         #nerrors += 1
         if raise_errors:
             raise ValueError(msg)
@@ -484,8 +605,8 @@ def sub_link(a, element_id, element, raise_errors):
         if True:
             logger.warning(msg)
         else:
-#                 note_error_msg(a, msg)
-            note_error2(a, 'Ref. error', 'substituting_empty_links():\n'+msg)
+            #                 note_error_msg(a, msg)
+            note_error2(a, 'Ref. error', 'substituting_empty_links():\n' + msg)
 #             nerrors += 1
             if raise_errors:
                 raise ValueError(msg)
@@ -496,7 +617,7 @@ def sub_link(a, element_id, element, raise_errors):
     label_what = element.attrs[LABEL_WHAT]
     label_name = element.attrs[LABEL_NAME]
 
-    classes = list(a.attrs.get('class', [])) # bug: I was modifying
+    classes = list(a.attrs.get('class', []))  # bug: I was modifying
 
 #     if le.query is not None:
 #         classes.append(le.query)
@@ -539,7 +660,7 @@ def sub_link(a, element_id, element, raise_errors):
                 s = bs(label_name)
                 assert s.name == 'fragment'
                 s.name = 'span'
-                #add_class(s, 'produced-here') # XXX
+                # add_class(s, 'produced-here') # XXX
             add_class(s, 'toc_name')
             a.append(s)
 
@@ -560,8 +681,12 @@ def sub_link(a, element_id, element, raise_errors):
                 label = label_name
         else:
             # default behavior
-            # label = label_what_number
-            label = label_what_number + ' - ' + label_name
+            if string_starts_with(['fig:', 'tab:', 'bib:', 'code:'], element_id):
+                label = label_what_number
+            elif label_name is None:
+                label = label_what_number
+            else:
+                label = label_what_number + ' - ' + label_name
 
         frag = bs(label)
         assert frag.name == 'fragment'
@@ -570,21 +695,30 @@ def sub_link(a, element_id, element, raise_errors):
         a.append(frag)
 
 
+def string_starts_with(prefixes, s):
+    return any([s.startswith(_) for _ in prefixes])
+
 LinkElement = namedtuple('LinkElement', 'linker eid linked query')
+
 
 def is_empty_link(a):
     empty = len(list(a.descendants)) == 0
     return empty
 
+
+def get_empty_links(soup):
+    """ Yields all the empty links """
+    for element in soup.find_all('a'):
+        if not is_empty_link(element):
+            continue
+        yield element
+
+
 def get_empty_links_to_fragment(soup):
     """
-        Find all links that have a reference to a fragment.
+        Find all empty links that have a reference to a fragment.
         yield LinkElement
     """
-#
-# s.findAll(lambda tag: tag.name == 'p' and tag.find(True) is None and
-# (tag.string is None or tag.string.strip()==""))
-
     logger.debug('building index')
     # first find all elements by id
     id2element = {}
@@ -594,29 +728,24 @@ def get_empty_links_to_fragment(soup):
 
     logger.debug('building index done')
 
-    for element in soup.find_all('a'):
-
-#         logger.debug('get_empty_links_to_fragment link: %s %s' % (element, empty))
-
-        if not is_empty_link(element):
-            continue
-
+    for element in get_empty_links(soup):
         if not 'href' in element.attrs:
             continue
 
         href = element.attrs['href']
-        if href.startswith('#'):
-            rest = href[1:]
-            if '/' in rest:
-                i = rest.index('/')
-                eid = rest[:i]
-                query = rest[i+1:]
-            else:
-                eid = rest
-                query = None
+        if not href.startswith('#'):
+            continue
+        rest = href[1:]
+        if '/' in rest:
+            i = rest.index('/')
+            eid = rest[:i]
+            query = rest[i + 1:]
+        else:
+            eid = rest
+            query = None
 
-            linked = id2element.get(eid, None)
-            yield LinkElement(linker=element, eid=eid, linked=linked, query=query)
+        linked = id2element.get(eid, None)
+        yield LinkElement(linker=element, eid=eid, linked=linked, query=query)
 
 
 def get_ids_from_soup(soup):

@@ -1,5 +1,5 @@
 
-from selenium import webdriver
+from selenium import webdriver  # @UnresolvedImport
 
 from mcdp.logs import logger
 
