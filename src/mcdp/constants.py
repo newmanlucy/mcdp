@@ -215,5 +215,5 @@ class MCDPConstants(object):
     
     
     placeholder_marker_start = '!['
-    placeholder_marker_end = '!['
+    placeholder_marker_end = ']'
     
