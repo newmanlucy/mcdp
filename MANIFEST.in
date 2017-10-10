@@ -4,13 +4,13 @@ include *.md
 include MANIFEST.in
 include requirements.txt
 include setup.py
-include circle.yml
 
 #recursive-include misc *.tmTheme
 #recursive-include misc *.sublime-syntax
 
 graft src/mcdp
 graft src/mcdp_cli
+graft src/mcdp_comp_tests
 # no! graft src/mcdp_data
 graft src/mcdp_depgraph
 graft src/mcdp_docs
@@ -20,6 +20,10 @@ graft src/mcdp_dp_tests
 #graft src/mcdp_ext_libraries
 graft src/mcdp_figures
 graft src/mcdp_figures_tests
+graft src/mcdp_hdb
+graft src/mcdp_hdb_tests
+graft src/mcdp_hdb_mcdp
+graft src/mcdp_hdb_mcdp_tests
 graft src/mcdp_ipython_utils
 graft src/mcdp_lang
 graft src/mcdp_lang_tests
@@ -29,15 +33,22 @@ graft src/mcdp_library_tests
 graft src/mcdp_maps
 graft src/mcdp_opt
 graft src/mcdp_opt_tests
+graft src/mcdp_repo
+graft src/mcdp_repo_tests
 graft src/mcdp_posets
 graft src/mcdp_posets_tests
 graft src/mcdp_report
 graft src/mcdp_report_ndp_tests
 graft src/mcdp_tests
-graft src/mcdp_web_tests
+graft src/mcdp_user_db
+graft src/mcdp_utils_gitrepo
+graft src/mcdp_utils_indexing
+graft src/mcdp_utils_misc
+graft src/mcdp_utils_xml
 graft src/mcdp_web
+graft src/mcdp_web_tests
 graft src/mocdp
-graft src/multi_index
+
 
 recursive-include src/mcdp_data *.in
 recursive-include src/mcdp_data *.md

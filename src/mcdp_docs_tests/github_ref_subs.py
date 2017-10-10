@@ -1,11 +1,10 @@
 from comptests.registrar import comptest, run_module_tests
+from contracts.utils import indent
 from mcdp.logs import logger
 from mcdp_docs.github_file_ref.display_file_imp import display_files
 from mcdp_docs.github_file_ref.reference import parse_github_file_ref, InvalidGithubRef
 from mcdp_docs.github_file_ref.substitute_github_refs_i import substitute_github_refs
 from mcdp_utils_xml.parsing import bs
-
-from contracts.utils import indent
 
 
 @comptest

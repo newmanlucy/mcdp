@@ -3,7 +3,7 @@ import os
 
 from compmake.utils.friendly_path_imp import friendly_path
 from mcdp_report.gg_utils import check_not_lfs_pointer
-from mcdp_utils_misc.locate_files_imp import locate_files
+from mcdp_utils_misc import locate_files
 
 
 def collect_by_extension(d):

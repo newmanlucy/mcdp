@@ -471,7 +471,7 @@ def order_dps(name2dp, connections):
         msg += '\nNames: %s' % names
         msg += '\nconnections: %s' % connections
         raise DPSemanticError(msg)
-    l = topological_sort(G)
+    l = list(topological_sort(G))
     if not (set(l) == names):
         msg = 'names = %s\n returned = %s\n connections: %s' % (names, l, connections)
         msg += '\n graph: %s %s' % (list(Gu.nodes()), list(Gu.edges()))
