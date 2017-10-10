@@ -1,12 +1,15 @@
-import PyPDF2
-import sys
-from contracts.utils import indent
-import os
-from system_cmd.meat import system_cmd_result
 from compmake.utils.filesystem_utils import make_sure_dir_exists
 from compmake.utils.friendly_path_imp import friendly_path
 from mcdp import logger
 from mcdp_utils_misc.fileutils import create_tmpdir, write_data_to_file
+import os
+import sys
+
+from contracts.utils import indent
+from system_cmd.meat import system_cmd_result
+
+import PyPDF2
+
 
 class NoFigureName(Exception):
     pass

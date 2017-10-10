@@ -276,11 +276,13 @@ r~~~
 """
 \\begin{figure}[H]
 \\hfill{}\\subfloat[\\label{fig:Simple-DP}]{\\centering{}
-\\includegraphics[scale=0.33]{gmcdptro_nonconvex1b}}
+figure removed
+}
 \\caption{\\label{fig:ceil-1}One feedback connection and a topologically continuous~$\\ftor$
 are sufficient to induce a disconnected feasible set.}
 \\end{figure}
 """,
+# \\includegraphics[scale=0.33]{gmcdptro_nonconvex1b}}
 """
 The minimal MCDP can be defined as in <a href="#code:empty"/>.
 

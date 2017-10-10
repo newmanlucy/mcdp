@@ -17,6 +17,7 @@ from .manual_join_imp import add_prev_next_links, split_in_files, get_id2filenam
 from .manual_join_imp import update_refs_
 from .split_disqus import append_disqus
 from mcdp_docs.source_info_imp import get_first_header_title
+from contracts.utils import indent
 
 
 show_timing = False
@@ -53,10 +54,17 @@ def make_page(contents, head0, main_toc):
 
     section_name = get_first_header_title(contents)
     if section_name is not None:
-        title = head.find('title')
         title2 = bs(section_name)
         title2.name = 'title'
-        title.replace_with(title2)
+        
+        title = head.find('title')
+        if title is None:
+#             msg = 'Cannot find the "title" element'
+#             msg += '\n' + indent(str(head)[:500], 'head')
+#             raise Exception(msg)
+            head.append(title2)
+        else:
+            title.replace_with(title2)
     
     body.append(tocdiv)
     not_toc = Tag(name='div')

@@ -5,7 +5,7 @@ from contracts.utils import indent
 from mcdp_docs.manual_join_imp import manual_join, split_in_files, DocToJoin
 from mcdp_docs.pipeline import render_complete
 from mcdp_docs.toc_number import number_styles, render_number
-from mcdp_docs.tocs import generate_toc
+from mcdp_docs.tocs import generate_toc, InvalidHeaders, fix_ids_and_add_missing
 from mcdp_library.library import MCDPLibrary
 from mcdp_tests import logger
 from mcdp_utils_xml.parsing import bs
@@ -36,7 +36,21 @@ def test_toc():
     soup = bs(s)
 #     print(soup)
 #     body = soup.find('body')
-    _toc = generate_toc(soup)
+
+    # first time it should fail 
+    try:
+        _toc = generate_toc(soup)
+    except InvalidHeaders as e:
+#         > InvalidHeaders: I expected that this header would start with either part:,app:,sec:.
+#         > <h1 id="one">One</h1>
+        pass 
+    else:
+        raise Exception()
+    
+    soup = bs(s)
+    fix_ids_and_add_missing(soup, 'prefix-')
+    generate_toc(soup)
+    
     s = str(soup)
     expected = ['sec:one', 'sub:two']
 #     print(indent(s, 'transformed > '))
@@ -61,7 +75,7 @@ def test_toc_first():
 
 <p>a</p>
 
-<h1 id='one'>One</h1>
+<h1 id='sec:one'>One</h1>
 
 <p>a</p>
  
@@ -111,6 +125,22 @@ def test_toc2():
     soup = bs(s)
 #     print(soup)
 #     body = soup.find('body')
+    fix_ids_and_add_missing(soup, 'prefix')
+    assert soup.find(id='sub:prefix-5') is not None
+#     <fragment>
+# <h1 id="sec:prefix--1">One</h1>
+# <h1 id="sec:prefix--2">Two</h1>
+# <h1 id="sec:prefix--3">Three</h1>
+# <p></p>
+# <h2 id="sub:prefix--4">A</h2>
+# <h2 id="sub:prefix--5">B</h2>
+# <h2 id="sub:prefix--6">C</h2>
+# <h3 id="subsub:prefix--7">a</h3>
+# <h3 id="subsub:prefix--8">b</h3>
+# <h3 id="subsub:prefix--9">c</h3>
+# </fragment>
+    print soup
+
     _toc = generate_toc(soup)
     s = str(soup)
 #     expected = ['sec:one', 'sub:two']

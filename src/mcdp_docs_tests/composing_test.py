@@ -17,14 +17,13 @@ def read_config_test():
     config = yaml.load("""
 - add: sb
 - add: sa
-- part: one
+- make-part: one
   title: My title
   contents:
   - add: s1
   - add: s2
 """)
-    d = Recipe.from_yaml(config)
-    print d
+    Recipe.from_yaml(config)
     
 
 def run_app(app, args):
@@ -102,12 +101,12 @@ book.version.yaml: |
     input: dist/master/book.html
     recipe:
         - toc
-        - part: part1
+        - make-part: part1
           title: First part
           contents:
           - add: sb
             except: to-remove
-        - part: part2
+        - make-part: part2
           title: Second part
           contents:
           - add: sa
