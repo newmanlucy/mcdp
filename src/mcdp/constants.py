@@ -1,5 +1,5 @@
 import numpy as np
-import getpass
+
 
 __all__ = ['MCDPConstants']
 
