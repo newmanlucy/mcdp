@@ -1240,7 +1240,8 @@ code.rvalue span.RcompUnit {
 }
 .only-zurich,
 .only-montreal,
-.only-chicago {
+.only-chicago,
+.only-taiwan {
   margin-left: 40px !important;
   border-left: dashed 1px red;
   padding-left: 10px;
@@ -1249,7 +1250,8 @@ code.rvalue span.RcompUnit {
 }
 .only-zurich::before,
 .only-montreal::before,
-.only-chicago::before {
+.only-chicago::before,
+.only-taiwan::before {
   display: block;
   float: left;
   margin-top: -2px;
@@ -1266,6 +1268,9 @@ code.rvalue span.RcompUnit {
 }
 .only-chicago::before {
   content: "🇺🇸";
+}
+.only-taiwan::before {
+  content: "🇹🇼";
 }
 li p {
   display: inline;
