@@ -38,21 +38,22 @@ def other_abbrevs_mcdps(soup):
     for k, v in translate.items():
         for e in soup.select(k):
             e.name = v
-            
-def other_abbrevs_envs(soup):
-    translate = { 
-        'knowledge-graph': ('div', {'markdown':1, 'class':'requirements'}),
-        'example-usage': ('div', {'markdown':1, 'class':'example-usage'}),
-        'comment': ('div', {'markdown':1, 'class':'comment'}),
-        'question': ('div', {'markdown':1, 'class':'question'}),
-        'doubt': ('div', {'markdown':1, 'class':'doubt'}),
-    }
-    for oname, (name, attrs) in translate.items():
-        for e in soup.select(oname):
-            e.name = name
-            for k, v in attrs.items():
-                if not k in e.attrs:
-                    e.attrs[k] = v
+#             
+# def other_abbrevs_envs(soup):
+#     # This is not used yet
+#     translate = { 
+#         'knowledge-graph': ('div', {'markdown':1, 'class':'requirements'}),
+#         'example-usage': ('div', {'markdown':1, 'class':'example-usage'}),
+#         'comment': ('div', {'markdown':1, 'class':'comment'}),
+#         'question': ('div', {'markdown':1, 'class':'question'}),
+#         'doubt': ('div', {'markdown':1, 'class':'doubt'}),
+#     }
+#     for oname, (name, attrs) in translate.items():
+#         for e in soup.select(oname):
+#             e.name = name
+#             for k, v in attrs.items():
+#                 if not k in e.attrs:
+#                     e.attrs[k] = v
                     
     
 prefix2class = {
