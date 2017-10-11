@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from contracts import contract
 import inspect
+from mcdp_lang_utils import Where
+from mcdp_utils_misc import pretty_print_dict
 import os
 
-from contracts import contract
 from contracts.interface import location
 from contracts.utils import indent
-from mcdp_docs.github_edit_links import get_repo_root, get_repo_information
-from mcdp_lang_utils.where import Where
-from mcdp_utils_misc.pretty_printing import pretty_print_dict
+
+from .github_edit_links import get_repo_root, get_repo_information
 
 
 class Location(object):

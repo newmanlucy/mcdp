@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
+from contracts import contract
+from mcdp import MCDPConstants
+from mcdp import logger
+from mcdp_utils_xml import add_class,  has_class
 
 from bs4.element import NavigableString, Tag
-
-from contracts import contract
-from mcdp import logger
-from mcdp.constants import MCDPConstants
-from mcdp_utils_xml import add_class
-from mcdp_utils_xml import has_class
 
 
 # What is recognized as a program name
@@ -194,7 +192,6 @@ def mark_console_pres_highlight(soup):
         if ct is None: 
             continue
 
-        from mcdp_docs.highlight import add_class
         add_class(pre, 'console')
 
         # add class "on-hostname"

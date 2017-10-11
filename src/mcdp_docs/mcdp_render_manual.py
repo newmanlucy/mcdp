@@ -52,9 +52,6 @@ class RenderManual(QuickApp):
         src = options.src
         src_dirs = [_ for _ in src.split(":") if _ and _.strip()]
 
-#         html_dirs = [_ for _ in options.extra.split(":") if _ and _.strip()]
-
-#         src_dirs = [expand_all(_) for _ in src_dirs]
 
         raise_errors = options.raise_errors
         out_dir = options.output
@@ -71,7 +68,6 @@ class RenderManual(QuickApp):
         if symbols is not None:
             symbols = open(symbols).read()
 
-#         bibfile = os.path.join(src_dirs[0], 'bibliography/bibliography.html')
 
         if out_dir is None:
             out_dir = os.path.join('out', 'mcdp_render_manual')

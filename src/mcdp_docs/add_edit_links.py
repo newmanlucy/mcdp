@@ -6,6 +6,7 @@ from bs4.element import Tag
 
 from .logs import logger
 
+
 def add_github_links_if_edit_url(soup, permalink_prefix='http://purl.org/dth/'):
     """ 
         If an element has an attribute 'github-edit-url' then add little icons.
