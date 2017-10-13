@@ -156,6 +156,8 @@ span.placeholder {
   padding-right: 1px;
   color: white;
   background-color: blue;
+  font-family: serif;
+  font-style: italic;
 }
 span.Unit,
 span.Nat,
