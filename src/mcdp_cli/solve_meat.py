@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 
-from contracts.utils import raise_desc, raise_wrapped
 from decent_params.utils import UserError
 from reprep import Report
 
+from contracts.utils import raise_desc, raise_wrapped
 from mcdp_dp.dp_transformations import get_dp_bounds
 from mcdp_dp.tracer import Tracer
 from mcdp_library import Librarian
