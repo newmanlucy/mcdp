@@ -68,7 +68,7 @@ def dpconnect(name2dp, connections, split=[]):
 
     # First, we need to order the dps using topological sorting
     try:
-        order = order_dps(name2dp, connections)
+        order = list(order_dps(name2dp, connections))
     except NetworkXUnfeasible:
         raise TheresALoop()
 
@@ -471,7 +471,7 @@ def order_dps(name2dp, connections):
         msg += '\nNames: %s' % names
         msg += '\nconnections: %s' % connections
         raise DPSemanticError(msg)
-    l = topological_sort(G)
+    l = list(topological_sort(G))
     if not (set(l) == names):
         msg = 'names = %s\n returned = %s\n connections: %s' % (names, l, connections)
         msg += '\n graph: %s %s' % (list(Gu.nodes()), list(Gu.edges()))

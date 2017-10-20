@@ -6,6 +6,14 @@ import sys
 from pint import UndefinedUnitError  # @UnresolvedImport
 from pint import UnitRegistry  # @UnresolvedImport
 
+# Redefining 'pixel' (<class 'pint.definitions.UnitDefinition'>)
+import logging
+
+pint_logger = logging.getLogger('pint.util')
+pint_logger.setLevel(logging.ERROR)
+pint_logger.info('disabling warning')
+
+
 from contracts import contract
 from contracts.utils import check_isinstance, raise_wrapped, raise_desc
 from mcdp.exceptions import DPSyntaxError, \

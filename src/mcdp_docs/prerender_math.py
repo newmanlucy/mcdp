@@ -2,10 +2,10 @@ import os
 import shutil
 from tempfile import mkdtemp
 
-from contracts import contract
-from contracts.utils import raise_wrapped, indent, raise_desc
 from system_cmd import CmdException, system_cmd_result
 
+from contracts import contract
+from contracts.utils import raise_wrapped, indent, raise_desc
 from mcdp import logger
 from mcdp_utils_misc import dir_from_package_name, get_mcdp_tmp_dir, memoize_simple
 from mcdp_utils_xml import bs, to_html_stripping_fragment
@@ -18,6 +18,7 @@ __all__ = [
       
 TAG_DOLLAR = 'tag-dollar'
 which = 'code, mcdp-poset, mcdp-value, mcdp-fvalue, mcdp-rvalue, render'
+
 def escape_for_mathjax(soup):
     """ Escapes dollars in code 
      
@@ -55,10 +56,18 @@ def get_prerender_js():
 class PrerenderError(Exception):
     pass
 
-def prerender_mathjax(s):
+def prerender_mathjax(s, symbols):
+    
+    if symbols:
+        lines = symbols.split('\n')
+        lines = [l for l in lines if l.strip()]
+        m = '$$' + "\n".join(lines) +'$$\n\n'
+    else:
+        m = ''
+
     STARTTAG = 'STARTHERE'
     ENDTAG = 'ENDHERE'
-    s = STARTTAG +  get_mathjax_preamble() + ENDTAG + s
+    s = STARTTAG +  get_mathjax_preamble() + ENDTAG + m + s
 
     try:
         s = prerender_mathjax_(s)
@@ -69,7 +78,6 @@ def prerender_mathjax(s):
             return s
         else:
             raise
-
 
     c0 = s.index(STARTTAG)
     c1 = s.index(ENDTAG) + len(ENDTAG)

@@ -7,14 +7,13 @@ from contracts import contract
 from contracts.utils import check_isinstance, indent
 
 from mcdp import logger
-from mcdp.exceptions import MCDPExceptionWithWhere, DPInternalError,\
-    DPSemanticError
+from mcdp.exceptions import MCDPExceptionWithWhere, DPInternalError, DPSemanticError
 from mcdp_dp import PrimitiveDP
 from mcdp_posets import Poset
 
 from .parse_actions import parse_wrap
 from .refinement import apply_refinement
-from mcdp_lang.namedtuple_tricks import recursive_print
+from .namedtuple_tricks import recursive_print
 
 
 __all__ = [
@@ -29,7 +28,7 @@ __all__ = [
 def decorator_check_exception_where_is_string(f):
     ''' Checks that if a DPSemanticError is thrown, it
         has a reference to the current string being parsed.
-        
+
         f(string, context)
     '''
     def parse(string, context=None):
@@ -54,7 +53,7 @@ def parse_ndp(string, context=None):
 
     if context is None:
         context = Context()
-    
+
     expr = parse_wrap(Syntax.ndpt_dp_rvalue, string)[0]
 #     logger.debug('TMP:\n'+ recursive_print(expr))
     expr2 = parse_ndp_refine(expr, context)
@@ -62,7 +61,7 @@ def parse_ndp(string, context=None):
 #     logger.debug('TMP:\n'+ recursive_print(expr2))
     res = parse_ndp_eval(expr2, context)
     assert isinstance(res, NamedDP), res
-    
+
     return res
 
 def standard_refine(v, context):
@@ -79,11 +78,11 @@ parse_primitivedp_refine = standard_refine
 def parse_ndp_eval(v, context):
     from .eval_ndp_imp import eval_ndp
     from mocdp.comp.interfaces import NamedDP
-    
+
     res = eval_ndp(v, context)
     assert isinstance(res, NamedDP), res
     return res
-    
+
 
 def parse_ndp_filename(filename, context=None):
     """ Reads the file and returns as NamedDP.
@@ -109,14 +108,14 @@ def parse_poset(string, context=None):
     from .syntax import Syntax
 
     v = parse_wrap(Syntax.space, string)[0]
-    
+
     if context is None:
         context = Context()
-    
+
     v2 = parse_poset_refine(v, context)
     res = parse_poset_eval(v2, context)
-    
-    return res 
+
+    return res
 
 def parse_poset_eval(x, context):
     from .eval_space_imp import eval_space
@@ -137,7 +136,7 @@ def parse_primitivedp(string, context=None):
 
     v2 = parse_primitivedp_refine(v, context)
     res = parse_primitivedp_eval(v2, context)
-    return res 
+    return res
 
 def parse_primitivedp_eval(x, context):
     from mcdp_lang.eval_primitivedp_imp import eval_primitivedp
@@ -170,7 +169,7 @@ def parse_constant_eval(x, context):
     space = result.unit
     space.belongs(value)
     return result
-    
+
 @contract(returns='isinstance(TemplateForNamedDP)')
 @decorator_check_exception_where_is_string
 def parse_template(string, context=None):
@@ -192,4 +191,3 @@ def parse_template_eval(x, context):
     result = eval_template(x, context)
     assert isinstance(result, TemplateForNamedDP)
     return result
- 

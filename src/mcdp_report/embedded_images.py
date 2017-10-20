@@ -1,19 +1,22 @@
 import base64
 import cStringIO
+from contracts import contract
+from mcdp import logger
+from mcdp_report.pdf_conversion import ConversionError
+from mcdp_utils_misc import get_md5
+from mcdp_utils_xml import add_style
+from mcdp_utils_xml.note_errors_inline import note_error2,\
+    note_warning2
 import mimetypes
 import os
 import re
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from contracts import contract
-from contracts.utils import check_isinstance
-
-from mcdp import logger
-from mcdp_utils_misc import get_md5
-from mcdp_utils_xml import add_style, add_class
+from contracts.utils import check_isinstance, raise_wrapped
 
 from .pdf_conversion import png_from_pdf
+from mcdp_utils_misc.fileutils import write_data_to_file
 
 
 # def embed_images(html, basedir):
@@ -87,13 +90,11 @@ def extract_assets(html, basedir):
             if tag.has_attr('download'):
                 basename = tag['download']
             else:
-                print('cannot find attr "download" in tag')
+                logger.warn('cannot find attr "download" in tag')
                 # print tag
                 continue
             filename = os.path.join(basedir, basename)
-            with open(filename, 'w') as f:
-                f.write(data)
-            print('written to %s' % filename)
+            write_data_to_file(data, filename)
 
 
 def extract_img_to_file(soup, savefile):
@@ -197,7 +198,8 @@ def extract_img_to_file_(soup, savefile, tagname, attrname):
         check_isinstance(use_src, str)
         tag[attrname] = use_src
         n += 1
-    logger.debug(('extract_img_to_file: extracted %d/%d images from %r tags, '
+    if False:
+        logger.debug(('extract_img_to_file: extracted %d/%d images from %r tags, '
                  ' attribute %r.') % (n, tot, tagname, attrname))
 
 
@@ -205,7 +207,7 @@ def get_ext_for_mime(mime):
     """ Returns the extension (without the dot) """
     if False:
         if mime == 'image/jpg':
-            print('warning: the correct mime is image/jpeg not "jpg".')
+            logger.debug('warning: the correct mime is image/jpeg not "jpg".')
         
     known = {
         'image/svg+xml': 'svg',
@@ -231,8 +233,9 @@ def get_ext_for_mime(mime):
         
     return ext
 
-
-def embed_img_data(soup, resolve, img_extensions = ['png', 'jpg', 'PNG', 'JPG', 'svg', 'SVG']):
+    
+def embed_img_data(soup, resolve, raise_on_error, img_extensions=['png', 'jpg', 'jpeg', 'JPEG',
+                                                    'PNG', 'JPG', 'svg', 'SVG']):
     """
         resolve: ref -> str  or None --- how to get the data
     """
@@ -242,15 +245,26 @@ def embed_img_data(soup, resolve, img_extensions = ['png', 'jpg', 'PNG', 'JPG', 
         if href.startswith('data:'):
             continue
         
+        if href.startswith('http'):
+            msg = 'I will not embed remote files, such as %s: ' % href
+            note_warning2(tag, 'Resource error', msg)
+            continue
+        
         for ext in img_extensions:
             
             if not href.endswith('.' + ext):
                 continue
              
             data = resolve(href)
+            
             if data is None:
-                logger.error('embed_img_data: Could not find file %s' % href)
-                continue
+                msg = 'embed_img_data: Could not find file %s' % href
+                
+                if raise_on_error:
+                    raise Exception(msg) # XXX
+                else:
+                    note_error2(tag, 'Resource error', msg) 
+                    continue
             
             check_isinstance(data, str)
             tag['src'] = data_encoded_for_src(data, ext)
@@ -280,29 +294,47 @@ def embed_svg_images(soup, extensions=('png', 'jpg')):
                 tag[HREF] = data_encoded_for_src(data, ext)
 
 
-def embed_pdf_images(soup, resolve, density):
+def embed_pdf_images(soup, resolve, density, raise_on_error):
     """ 
         Converts PDFs to PNGs and embeds them
         resolve: filename --> string
     """  
     for tag in soup.select('img'):
         if tag.has_attr('src') and tag['src'].lower().endswith('pdf'):
-            embed_pdf_image(tag, resolve, density)
+            embed_pdf_image(tag, resolve, density, raise_on_error)
          
-def embed_pdf_image(tag, resolve, density):
+def embed_pdf_image(tag, resolve, density, raise_on_error=True):
     assert tag.name == 'img'
     assert tag.has_attr('src')
     #print('!!embedding %s' % str(tag))
     #raise Exception(str(tag))
     # load pdf data    
-    data_pdf = resolve(tag['src'])
+    src = tag['src']
+    if src.startswith('http'):
+        msg = 'I will not embed remote files, such as %s: ' % src
+        logger.warning(msg)
+        
+    data_pdf = resolve(src)
     if data_pdf is None:
-        add_class(tag, 'missing-image')
-        return
+        msg = 'Could not find PDF file %r.' % src
+        if raise_on_error:
+            raise Exception(msg) # xxx
+        else:
+            note_error2(tag, 'Resource error', msg, ['missing-image'])
+            return
 
     # convert PDF to PNG
     # density = pixels per inch
-    data_png = png_from_pdf(data_pdf, density=density)
+    try:
+        data_png = png_from_pdf(data_pdf, density=density)
+    except ConversionError as e:
+        msg = 'I was not able to convert the PDF "%s" to PNG.' % tag['src']
+        if raise_on_error:
+            raise_wrapped(ConversionError, e, msg, compact=True)
+        else:
+            note_error2(tag, 'Conversion error', msg, [])
+        return 
+        
     # get PNG image size in pixels
     width_px, height_px = get_pixel_width_height_of_png(data_png)
     # compute what was the original width of PDF in points

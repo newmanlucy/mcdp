@@ -1,13 +1,12 @@
+from contracts import contract
+from mcdp import logger
+from mcdp_utils_misc import get_mcdp_tmp_dir
 import os
 import shutil
+from system_cmd import CmdException,  system_cmd_result
 from tempfile import mkdtemp
 
-from contracts import contract
 from contracts.utils import indent
-from system_cmd import CmdException
-from system_cmd import system_cmd_result
-
-from mcdp_utils_misc.fileutils import get_mcdp_tmp_dir
 
 
 def unescape_entities(s):
@@ -25,7 +24,14 @@ def run_lessc(soup):
         s1 = unescape_entities(s1)
         s1 = s1.replace('AND', '&')
         s1 = s1.encode('utf-8')
-        s2 = lessc_string(s1)
+        try:
+            s2 = lessc_string(s1)    
+        except LesscError as e:
+            msg = 'Could not convert string using less (ignored)'
+            msg += '\n'+indent(e, '>> ')
+            logger.warning(msg)
+            continue
+        
         s2 = unicode(s2, 'utf-8')
 #         print indent(s2, 'less |')
         s2 = '/* preprocessed with less */\n' + s2
@@ -64,8 +70,9 @@ def lessc_string(s1):
                     raise_on_error=False)
             
             if res.ret:
-                msg = 'lessc error (ret = %d).' % res.ret 
-                msg += '\n\n' + indent(res.stderr, '  |')
+                msg = 'lessc error (return value = %d).' % res.ret 
+                msg += '\n\n' + indent(res.stderr, '',  'stderr:')
+                msg += '\n\n' + indent(res.stdout, '',  'stdout:')
                 raise LesscError(msg)
             
             with open(f2) as f:

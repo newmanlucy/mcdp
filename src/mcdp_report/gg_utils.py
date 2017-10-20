@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 """ Utils for graphgen """
 import codecs
-from copy import deepcopy
-import os
-import traceback
-
 from contracts import contract
-from contracts.utils import check_isinstance, raise_desc, indent
+from copy import deepcopy
 from mcdp import logger, MCDPConstants
 from mcdp.exceptions import mcdp_dev_warning, DPSemanticError
+from mcdp_utils_misc.fileutils import tmpfile
 from mcdp_utils_misc.string_utils import get_md5
 from mcdp_utils_misc.timing import timeit_wall
 from mcdp_utils_xml import bs
-import networkx as nx  # @UnresolvedImport
-from reprep.constants import MIME_PDF, MIME_PLAIN, MIME_PNG, MIME_SVG
+import os
 from system_cmd import CmdException, system_cmd_result
-from mcdp_utils_misc.fileutils import tmpfile
+import traceback
+
+from contracts.utils import check_isinstance, raise_desc, indent
+from reprep.constants import MIME_PDF, MIME_PLAIN, MIME_PNG, MIME_SVG
+
+import networkx as nx  # @UnresolvedImport
 
 
 def graphviz_run(filename_dot, output, prog='dot'):
@@ -212,20 +213,30 @@ def gg_get_format(gg, data_format):
         raise ValueError('No known format %r.' % data_format)
 
 
-def embed_images_from_library2(soup, library, raise_errors=True):
+def embed_images_from_library2(soup, library, raise_errors):
     """ Resolves images from library """
+    
     def resolve(href):
         #print('resolving %r' % href)
+        if href.startswith('http'):
+            msg = 'I am not able to download external resources, such as:'
+            msg += '\n  '  + href
+            logger.error(msg)
+            return None
+        
         try:
             f = library._get_file_data(href)
-        except DPSemanticError:
-            if raise_errors:
-                raise
-            else:
-                msg = 'Could not find file %r.' % href
-                logger.error(msg)
-                return None
+        except DPSemanticError as e:
+#             if raise_errors:
+#                 raise
+#             else:
+            msg = 'Could not find file %r.' % href
+            logger.error(msg)
+            logger.error(str(e))
+            return None
         data = f['data']
+        
+        check_not_lfs_pointer(f['realpath'], data)
         # realpath = f['realpath']
         return data
             
@@ -233,8 +244,15 @@ def embed_images_from_library2(soup, library, raise_errors=True):
     
     from mcdp_report.embedded_images import embed_img_data, embed_pdf_images
     
-    embed_pdf_images(soup, resolve, density)
-    embed_img_data(soup, resolve)
-    return None
+    embed_pdf_images(soup, resolve, density, raise_on_error=raise_errors)
+    embed_img_data(soup, resolve, raise_on_error=raise_errors)
+    
          
 
+def check_not_lfs_pointer(label, contents):
+    if 'git-lfs.github.com' in contents:
+        msg = 'File %s is actually a git lfs pointer.' % label
+        msg += '\nThis means that you have not installed Git LFS.'
+        msg += '\nAfter that, perhaps you might recover using `git lfs pull`.'
+        raise Exception(msg )
+        

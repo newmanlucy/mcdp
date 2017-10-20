@@ -1,59 +1,77 @@
-import os
-import sys
-
-from bs4 import BeautifulSoup
-
-from mcdp.logs import logger
+from compmake.utils.filesystem_utils import make_sure_dir_exists
 from mcdp_report.embedded_images import extract_img_to_file
+from mcdp_utils_misc import write_data_to_file
+from mcdp_utils_xml import read_html_doc_from_file,\
+    write_html_doc_to_file
+import os
+
+from quickapp import QuickAppBase
+
+from .logs import logger
 
 
-def go():
-    if len(sys.argv) != 3:
-        print('Syntax:\n\n     %s input_html output_html' % 
-              os.path.basename(sys.argv[0]))
-        print('\n\nError: I need exactly 2 arguments.')
-        sys.exit(1)
-    fn = sys.argv[1]
-    out = sys.argv[2]
+class ExtractAssets(QuickAppBase):
+    """ 
+        Extracts the image assets from HTML and creates external files.
+         
+        Usage:
+            
+            %prog  --input input.html --output out.html
+            
+        It puts the assets in the directory
+        
+            out.html.assets    
     
-    assets_dir = out + '.assets'
+    """
+
+    def define_program_options(self, params):
+        params.add_string('input', help="""Input HTML file""")
+        params.add_string('output', help="""Output HTML file""")
+        params.add_string('assets', help="""Where to put the assets""",
+                          default=None)
+
+    def go(self):
+        fi = self.options.input
+        fo = self.options.output 
+        if self.options.assets is None:
+            assets_dir = fo + '.assets'
+        else:
+            assets_dir = self.options.assets
+                 
+        extract_assets_from_file(fi, fo, assets_dir)
+
+extract_assets_main = ExtractAssets.get_sys_main()
+
+def extract_assets_from_file(fi, fo, assets_dir):
+#     logger.info('Extracting assets ___')
+#     logger.info('Input: %s' % fi)
+#     logger.info('Output: %s' % fo)
+#     logger.info('Using assets dir: %s' % assets_dir)
+
+    make_sure_dir_exists(fo)
     if not os.path.exists(assets_dir):
         os.makedirs(assets_dir)
-    logger.debug('Using assets dir %s' % assets_dir)
-    
-    outd = os.path.dirname(out)
-    if not os.path.exists(outd):
-        os.makedirs(outd)
-        
-    return go_(fn, out, assets_dir)
-    
-    
-def go_(fn, out, assets_dir):
-    data = open(fn).read()
-    soup = BeautifulSoup(data, "lxml", from_encoding='utf-8')
-    go__(soup, out, assets_dir)
-    s = str(soup)
-    logger.info('writing to %r' % out)
-    with open(out, 'w') as f:
-        f.write(str(s))
-        
-        
-def go__(soup, out, assets_dir):
 
+    soup = read_html_doc_from_file(fi)
+    s0 = os.path.getsize(fi)
+    
     def savefile(filename_hint, data):
         """ must return the url (might be equal to filename) """
         where = os.path.join(assets_dir, filename_hint)
-        logger.debug('writing to %s' % where)
-        with open(where, 'wb') as f:
-            f.write(data)
-        
-        relative = os.path.relpath(where, os.path.dirname(out))
-        
+        write_data_to_file(data, where)
+        relative = os.path.relpath(where, os.path.dirname(fo))
         return relative
     
     extract_img_to_file(soup, savefile)
-    
+
+    write_html_doc_to_file(soup, fo)
+    if False:
+        s1 = os.path.getsize(fo)
+        inmb = lambda x: '%.1f MB' % (x / (1024.0*1024)) 
+        msg = 'File size: %s -> %s' % (inmb(s0), inmb(s1))
+        logger.info(msg)
+
     
 if __name__ == '__main__':
-    go()
+    extract_assets_main()
     

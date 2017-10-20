@@ -5,8 +5,7 @@ from comptests.registrar import comptest
 from mcdp_library import Librarian
 from mocdp.comp.context import Context
 
-from .create_mockups import create_hierarchy
-
+from mcdp_utils_misc.create_mockups import create_hierarchy
 
 @comptest
 def feat_import1():

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
+from compmake.utils.filesystem_utils import make_sure_dir_exists
 from comptests.registrar import run_module_tests, comptest
-from mcdp_docs.manual_join_imp import manual_join
+from contracts.utils import indent
+from mcdp_docs.manual_join_imp import manual_join, split_in_files, DocToJoin
 from mcdp_docs.pipeline import render_complete
 from mcdp_docs.toc_number import number_styles, render_number
-from mcdp_docs.tocs import generate_toc
+from mcdp_docs.tocs import generate_toc, InvalidHeaders, fix_ids_and_add_missing
 from mcdp_library.library import MCDPLibrary
 from mcdp_tests import logger
-from mcdp_utils_xml.parsing import bs
-
-from contracts.utils import indent
+from mcdp_utils_xml import bs
 
 
 @comptest
@@ -36,7 +36,21 @@ def test_toc():
     soup = bs(s)
 #     print(soup)
 #     body = soup.find('body')
-    _toc = generate_toc(soup)
+
+    # first time it should fail 
+    try:
+        _toc = generate_toc(soup)
+    except InvalidHeaders as e:
+#         > InvalidHeaders: I expected that this header would start with either part:,app:,sec:.
+#         > <h1 id="one">One</h1>
+        pass 
+    else:
+        raise Exception()
+    
+    soup = bs(s)
+    fix_ids_and_add_missing(soup, 'prefix-')
+    generate_toc(soup)
+    
     s = str(soup)
     expected = ['sec:one', 'sub:two']
 #     print(indent(s, 'transformed > '))
@@ -44,6 +58,46 @@ def test_toc():
         assert e in s
 
 
+@comptest
+def test_toc_first():
+    s = """
+<p>Before everything</p>
+<h1 id='booktitle' nonumber="1" notoc="1">Booktitle</h1>
+
+<p>A figure</p>
+
+<h1 id='mtoc' nonumber="1" notoc="1">toc</h1>
+
+<p> This is my toc </p>
+
+ 
+<h1 id='part:part1'>Part1</h1>
+
+<p>a</p>
+
+<h1 id='sec:one'>One</h1>
+
+<p>a</p>
+ 
+    """ 
+    files_contents= [DocToJoin(docname='a', contents=s, source_info=None)]
+    
+    stylesheet = 'v_manual_blurb_ready'
+    res = manual_join(template=template, files_contents=files_contents, 
+                      stylesheet=stylesheet)
+
+    soup = bs(res)
+    
+#     print(indent(soup.prettify(), 't > '))
+#     body = soup.find('body')
+    filename2contents = split_in_files(soup)
+    print list(filename2contents.keys())
+    index = filename2contents['index.html']
+    
+    print indent(index, 'index > ')
+    s = str(index)
+    assert 'Before everything' in s
+    
 @comptest
 def test_toc2():
     s = """
@@ -71,6 +125,22 @@ def test_toc2():
     soup = bs(s)
 #     print(soup)
 #     body = soup.find('body')
+    fix_ids_and_add_missing(soup, 'prefix')
+    assert soup.find(id='sub:prefix-5') is not None
+#     <fragment>
+# <h1 id="sec:prefix--1">One</h1>
+# <h1 id="sec:prefix--2">Two</h1>
+# <h1 id="sec:prefix--3">Three</h1>
+# <p></p>
+# <h2 id="sub:prefix--4">A</h2>
+# <h2 id="sub:prefix--5">B</h2>
+# <h2 id="sub:prefix--6">C</h2>
+# <h3 id="subsub:prefix--7">a</h3>
+# <h3 id="subsub:prefix--8">b</h3>
+# <h3 id="subsub:prefix--9">c</h3>
+# </fragment>
+    print soup
+
     _toc = generate_toc(soup)
     s = str(soup)
 #     expected = ['sec:one', 'sub:two']
@@ -208,19 +278,20 @@ Citing only number:
     realpath = __name__
     s = render_complete(library, s, raise_errors, realpath)
     
-    template = """<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        </head><body></body></html>
-        """
-    files_contents = [(('a','b'), s)]
+    files_contents = [DocToJoin(docname='a',contents=s, source_info=None)]
     stylesheet = 'v_manual_blurb_ready'
-    res = manual_join(template=template, files_contents=files_contents, bibfile=None, stylesheet=stylesheet)
+    res = manual_join(template=template, files_contents=files_contents, stylesheet=stylesheet)
 
     fn = 'out/comptests/test_toc_numbers1.html' # XXX: write on test folder
+    make_sure_dir_exists(fn)
     logger.info('written on %s' % fn)
     with open(fn, 'w') as f:
         f.write(res) 
 
 
-
+template = """<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        </head><body></body></html>
+        """
+        
 if __name__ == '__main__':
     run_module_tests()

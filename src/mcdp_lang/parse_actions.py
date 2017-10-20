@@ -36,13 +36,15 @@ def copy_expr_remove_action(expr):
 @decorator
 def decorate_add_where(f, *args, **kwargs):
     where = args[0].where
-    
+
 #     logger.debug('decorate_add_where where.string = %r' % where.string)
     try:
         return f(*args, **kwargs)
     except MCDPExceptionWithWhere as e:
-        _, _, tb = sys.exc_info() 
+        _, _, tb = sys.exc_info()
         raise_with_info(e, where, tb)
+    except MemoryError as e:
+        raise
     except Exception as e:
         msg = 'Unexpected exception while executing %s.' % f.__name__
         if args and isnamedtupleinstance(args[0]):
@@ -58,7 +60,7 @@ def add_where_information(where):
     active = True
     if not active:
         logger.debug('Note: Error tracing disabled in add_where_information().')
-        
+
     if not active:
         mcdp_dev_warning('add_where_information is disabled')
         yield
@@ -80,29 +82,29 @@ def nice_stack(tb):
     curpath = os.path.realpath(os.getcwd())
     s = s.replace(curpath, '.')
     return s
-    
+
 
 def raise_with_info(e, where, tb):
     check_isinstance(e, MCDPExceptionWithWhere)
     existing = getattr(e, 'where', None)
-#     if existing is not None: 
+#     if existing is not None:
 #         raise
 #     use_where = existing if existing is not None else where
     if existing is not None and existing.string == where.string:
         use_where = existing
-        error = e.error 
+        error = e.error
     else:
-        
+
         if existing is not None:
             use_where = where
             error = e.error + '\n' + format_where(existing)
-#             error = format_where(where) + '\n'+ format_where(existing)  + '\n' +  e.error    
+#             error = format_where(where) + '\n'+ format_where(existing)  + '\n' +  e.error
         else:
             use_where = where
             error = e.error
 #         logger.debug('raise_with_info: seen %r ' % existing)
     stack = nice_stack(tb)
-    
+
     args = (error, use_where, stack)
     raise type(e), args, tb
 
@@ -138,7 +140,7 @@ def wheredecorator(b):
         return res
     return bb
 
-def spa(x, b): 
+def spa(x, b):
     bb = wheredecorator(b)
     @parse_action
     def p(tokens, loc, s):
@@ -150,7 +152,7 @@ def spa(x, b):
 
         if isnamedtupleinstance(res):
             if res.where is not None:
-                check_isinstance(res.where, Where)        
+                check_isinstance(res.where, Where)
         if isnamedtupleinstance(res) and \
             (res.where is None or res.where.character_end is None):
             w2 = Where(s, character=loc, character_end=character_end)
@@ -167,12 +169,12 @@ def spa(x, b):
                     (res, isnamedtupleinstance(res))
 
         return res
-    
+
     a = x.parseAction
     if a != []:
         msg = 'This parsing expression already had a parsing element'
         raise_desc(DPInternalError, msg, x=x, new_action=b)
-    
+
     x.setParseAction(p)
 
 @parse_action
@@ -240,8 +242,8 @@ def fvalue_minus_parse_action(tokens):
     assert l.where.character_end is not None
     res = CDP.FValueMinusN(l, where=l.where)
     return res
-# 
-# 
+#
+#
 # def get_token_of_class(tokens, klass):
 #     """ Returns the lpar instance if it exists, or None.
 #         It also removes it from the list. """
@@ -285,13 +287,13 @@ def parse_wrap_filename(expr, filename):
         raise e.with_filename(filename)
 
 def translate_where(where0, string):
-    """ 
+    """
         Take the first where; compute line, col according to where0.string,
         and find out the corresponding chars in the second string.
-        
+
         This assumes that string and where0.string have the same number of lines.
     """
-    
+
     nlines = len(string.split('\n'))
     nlines0 = len(where0.string.split('\n'))
     if nlines != nlines0:
@@ -299,35 +301,43 @@ def translate_where(where0, string):
         msg += '\n         string (%d lines): %r' % (nlines, string)
         msg += '\n  where0.string (%d lines): %r' % (nlines0, where0.string)
         raise_desc(DPInternalError, msg)
-    
+
     string0 = where0.string
     line, col = line_and_col(where0.character, string0)
     character2 = location(line, col, string)
-    
+
     if where0.character_end is None:
         character_end2 = None
     else:
         line, col = line_and_col(where0.character_end, string0)
-        character_end2 = location(line, col, string) 
-    
+        character_end2 = location(line, col, string)
+
     where = Where(string=string, character=character2, character_end=character_end2)
     return where
 
 def parse_wrap(expr, string):
+
+    """
+
+
+        transparent to MemoryError
+    """
+
+
     from .refinement import namedtuple_visitor_ext
-    
+
     if isinstance(string, unicode):
         msg = 'The string is unicode. It should be a str with utf-8 encoding.'
         msg += '\n' + string.encode('utf-8').__repr__()
         raise ValueError(msg)
-    
+
     check_isinstance(string, bytes)
 
     # Nice trick: the remove_comments doesn't change the number of lines
     # it only truncates them...
-    
+
     string0 = remove_comments(string)
-    
+
     if not string0.strip():
         msg = 'Nothing to parse.'
         where = Where(string, character=len(string))
@@ -338,30 +348,30 @@ def parse_wrap(expr, string):
             w = str(find_parsing_element(expr))
         except ValueError:
             w = '(unknown)'
-            
+
         with timeit(w, MCDPConstants.parsing_too_slow_threshold):
             expr.parseWithTabs()
-            
-            
+
+
             parsed = expr.parseString(string0, parseAll=True)  # [0]
             def transform(x, parents):  # @UnusedVariable
                 if x.where is None: # pragma: no cover
                     msg = 'Where is None for this element'
                     raise_desc(DPInternalError, msg, x=recursive_print(x),
                                all=recursive_print(parsed[0]))
-                    
+
                 where = translate_where(x.where, string)
                 return get_copy_with_where(x, where)
-            
+
             parsed_transformed = namedtuple_visitor_ext(parsed[0], transform)
 
-            if hasattr(parsed_transformed, 'where'):            
+            if hasattr(parsed_transformed, 'where'):
                 # could be an int, str
                 assert_equal(parsed_transformed.where.string, string)
-            
+
             res = fix_whitespace(parsed_transformed)
             return [res]
-          
+
     except (ParseException, ParseFatalException) as e:
         where1 = Where(string0, e.loc)
         where2 = translate_where(where1, string)
@@ -370,10 +380,12 @@ def parse_wrap(expr, string):
         s = s0
         e2 = DPSyntaxError(s, where=where2)
         raise DPSyntaxError, e2.args, sys.exc_info()[2]
-         
+
     except DPSemanticError as e:
         msg = 'This should not throw a DPSemanticError'
-        raise_wrapped(DPInternalError, e, msg, exc=sys.exc_info()) 
+        raise_wrapped(DPInternalError, e, msg, exc=sys.exc_info())
+    except MemoryError as e:
+        raise
     except RuntimeError as e:
         msg = 'RuntimeError %s while parsing string.' % (type(e).__name__)
         msg += '\n' + indent(string, 'string: ')
@@ -406,11 +418,11 @@ def funshortcut1m(provides, fnames, prep_using, name):
                              fnames=fnames,
                              prep_using=prep_using,
                              name=name)
-    
-    
+
+
 @contract(name=CDP.DPName)
 def resshortcut1m(requires, rnames, prep_for, name):
-    return CDP.ResShortcut1m(requires=requires, rnames=rnames, 
+    return CDP.ResShortcut1m(requires=requires, rnames=rnames,
                              prep_for=prep_for, name=name)
 
 
@@ -432,5 +444,5 @@ def integer_fraction_from_superscript(x):
     '⁷': CDP.IntegerFraction(num=7, den=1, where=w),
     '⁸': CDP.IntegerFraction(num=8, den=1, where=w),
     '⁹': CDP.IntegerFraction(num=9, den=1, where=w),
-    }   
+    }
     return replacements[x]

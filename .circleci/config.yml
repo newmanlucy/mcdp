@@ -1,0 +1,88 @@
+version: 2
+jobs:
+    build:
+     docker:
+        - image: andreacensi/duckietown-xenial-kinetic:18
+     parallelism: 4
+     steps:
+        - checkout
+        - run:
+            name: Pulling large files.
+            command: |
+                # git lfs version
+                # git lfs pull
+        - run:
+            name: deps
+            command: |
+                pip install -U decorator>=4.1.0
+
+
+        - run:
+            name: NPM
+            command: |
+                curl -sL https://deb.nodesource.com/setup_6.x | bash
+                apt install -y nodejs
+                npm install MathJax-node jsdom@9.3 less
+
+        - run:
+            name: update comptests
+            command: |
+                # pip uninstall -y comptests
+                python setup.py develop
+                python -c "import comptests; print comptests.__version__"
+
+                mkdir -p out/comptests-failures
+
+        - run:
+            name: Install
+            command: |
+                python setup.py develop
+
+                pip install pympler
+
+                pip install git+https://github.com/AndreaCensi/compmake.git@mcdp
+
+                pip install compmake==3.5.12
+
+        - run:
+            name: Make sure things are ok
+            command:  |
+                echo "Worker" $CIRCLE_NODE_INDEX " of " $CIRCLE_NODE_TOTAL:
+                echo "Current directory:"
+                pwd
+                /usr/bin/nodejs --version
+                /usr/bin/npm --version
+                python --version
+                python -c "import numpy; print 'numpy: %s' % numpy.__version__"
+                python -c "import matplotlib; print 'matplotlib: %s' % matplotlib.__version__"
+                python -c "import compmake; print 'compmake: %s' % compmake.__version__"
+                python -c "import contracts; print 'contracts: %s' % contracts.__version__"
+                fc-list | sort
+                cp misc/unittests-compmake.rc .compmake.rc
+                cat .compmake.rc
+
+        - run:
+            command:  |
+                make clean circle
+            environment:
+                MCDP_TEST_SKIP_MCDPOPT: 1
+                # MCDP_TEST_LIBRARIES_EXCLUDE = mcdp_theory
+                # MCDP_TEST_LIBRARIES = "basic,eversion,libtemplates,multisets_tests,posets,tuple_indexing,tuple_making,uncertainty,comments,documents,making,pop,batteries_v1"
+                MPLBACKEND: agg
+
+        - run:
+            when: always
+            command: |
+                mkdir -p out/comptests/junit
+                comptests-to-junit  out/comptests/compmake >  out/comptests/junit/junit.xml
+        - test-results-store:
+                path: out/comptests/junit
+
+        - run:
+            when: always
+            command: |
+                ./misc/generate-other-reports.sh
+
+        - store_artifacts:
+              path: out
+              destination: out

@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 import codecs
 from contextlib import contextmanager
+import os
 import shutil
 from tempfile import mkdtemp, NamedTemporaryFile
 
+from compmake.utils import friendly_path, make_sure_dir_exists
+from mcdp import logger
+from .path_utils import expand_all
+
 
 def get_mcdp_tmp_dir():
-    """ Returns *the* temp dir for this process """
+    """ Returns *the* temp dir for this project.
+	Note that we need to customize with username, otherwise
+	there will be permission problems.  """
     from tempfile import gettempdir
-    import os
     d0 = gettempdir()
-    d = os.path.join(d0, 'mcdp_tmp_dir')
+    import getpass
+    username = getpass.getuser()
+    d = os.path.join(d0, 'mcdp_tmp_dir-%s' % username)
     if not os.path.exists(d):
         try:
             os.makedirs(d)
@@ -24,14 +32,21 @@ def create_tmpdir(prefix='tmpdir'):
     return d
 
 @contextmanager
-def tmpdir(prefix='tmpdir', erase=True):
-    ''' Yields a temporary dir that shall be deleted later. '''
+def tmpdir(prefix='tmpdir', erase=True, keep_on_exception=False):
+    ''' Yields a temporary dir that shall be deleted later.
+    
+        If keep_on_exception is True, does not erase.
+        This is helpful for debugging problems.
+     '''
     d = create_tmpdir(prefix)
     try:
         yield d
-    finally:
-        if erase:
+    except:
+        if erase and (not keep_on_exception):
             shutil.rmtree(d)
+        raise
+    if erase:
+        shutil.rmtree(d)
 
 @contextmanager
 def tmpfile(suffix):
@@ -46,3 +61,32 @@ def read_file_encoded_as_utf8(filename):
     s = u.encode('utf-8')
     return s
 
+
+def write_data_to_file(data, filename):
+    """ 
+        Writes the data to the given filename. 
+        If the data did not change, the file is not touched.
+    
+    """
+    if not isinstance(data, str):
+        msg = 'Expected "data" to be a string, not %s.' % type(data).__name__
+        raise ValueError(msg)
+    if len(filename) > 256:
+        msg = 'Invalid argument filename: too long. Did you confuse it with data?'
+        raise ValueError(msg)
+    
+    filename = expand_all(filename)
+    make_sure_dir_exists(filename)
+    
+    if os.path.exists(filename):
+        current = open(filename).read()
+        if current == data:
+            if not 'assets' in filename:
+                logger.debug('already up to date %s' % friendly_path(filename))
+            return
+         
+    with open(filename, 'w') as f:
+        f.write(data)
+    logger.debug('Written to: %s' % friendly_path(filename))
+     
+    

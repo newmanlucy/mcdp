@@ -1,0 +1,31 @@
+
+.only-zurich,
+.only-montreal,
+.only-chicago,
+.only-taiwan {
+    margin-left: 40px !important;
+    border-left: dashed 1px red;
+    padding-left: 10px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.only-zurich::before,
+.only-montreal::before,
+.only-chicago::before,
+.only-taiwan::before {
+    // outline: solid 1px red;
+    display: block;
+    float: left;
+    margin-top: -2px;
+    margin-left: -30px;
+    margin-bottom: -10px;
+    margin-right: 10px;
+    background-size: cover;
+}
+
+
+.only-zurich::before { content: "🇨🇭"}
+.only-montreal::before { content: "🇨🇦"}
+.only-chicago::before { content: "🇺🇸"}
+.only-taiwan::before { content: "🇹🇼"}

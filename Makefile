@@ -5,6 +5,12 @@ package=mcdp_tests
 
 libraries=src/mcdp_data/bundled.mcdp_repo/shelves
 
+all:
+	echo "Instructions:"
+
+serve-local:
+	DISABLE_CONTRACTS=1 PYRAMID_RELOAD_TEMPLATES=1 pserve --reload ../mcdp-user-db/config/local.ini
+
 prepare_tests:
 	mkdir -p $(out)
 
@@ -47,7 +53,7 @@ circle: prepare_tests
 	DISABLE_CONTRACTS=1 \
 	# MCDP_TEST_LIBRARIES_EXCLUDE="mcdp_theory,droneD_complete_templates,manual" \
 	# 	comptests -o $(out) --nonose -c "rparmake n=2" $(package)
-	MCDP_TEST_LIBRARIES_EXCLUDE="mcdp_theory,droneD_complete_templates,manual" \
+	MCDP_TEST_LIBRARIES_EXCLUDE="mcdp_theory,droneD_complete_templates" \
 		comptests -o $(out) --nonose -c "rmake" $(package)
 	# ./misc/t ls failed
 	# ./misc/t parmake
@@ -84,7 +90,7 @@ coverage-report:
 
 coverage-coveralls:
 	# without --nogit, coveralls does not find the source code
-	COVERALLS_REPO_TOKEN=LDWrmw94YNEgp8YSpJ6ifSWb9aKfQt3wC coveralls --nogit --base_dir . 
+	COVERALLS_REPO_TOKEN=LDWrmw94YNEgp8YSpJ6ifSWb9aKfQt3wC coveralls --nogit --base_dir .
 
 clean:
 	rm -rf $(out) out/opt_basic_*
@@ -98,12 +104,18 @@ stats-locs-tests:
 	wc -l `find . -type f -name '*.py' | grep test`
 
 
+# bump-upload:
+# 	bumpversion patch
+# 	git push --tags
+# 	python setup.py sdist upload
+
 bump-upload:
 	bumpversion patch
 	git push --tags
-	python setup.py sdist upload
-
-
+	git push --all
+	rm -f dist/*
+	python setup.py sdist
+	twine upload dist/*
 
 readme-commands:
 	mcdp-solve -d $(libraries)/examples/example-battery.mcdplib battery "<1 hour, 0.1 kg, 1 W>"

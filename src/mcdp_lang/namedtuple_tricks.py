@@ -81,7 +81,7 @@ def recursive_print(x):
     for k, v in x._asdict().items():
         if k == 'where': continue
         first = ' %s: ' % k
-        prefix = ' '* len(first)
+        prefix = ' ' * len(first)
         first += '|'
         prefix += '|'
         r = recursive_print(v).strip()

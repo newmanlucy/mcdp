@@ -4,7 +4,7 @@
 # from nose.tools import assert_raises
 # 
 # from comptests.registrar import comptest, run_module_tests
-# from mcdp_library_tests.create_mockups import mockup_flatten
+# from mcdp_utils_misc.create_mockups import mockup_flatten
 # from mcdp_repo.repo_interface import repo_from_url, RepoInvalidURL, MCDPGitRepo
 # from mcdp_shelf_tests.shelves import setup_shelve_01
 # from mcdp_utils_misc.fileutils import tmpdir

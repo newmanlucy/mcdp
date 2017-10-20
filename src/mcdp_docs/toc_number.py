@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from collections import OrderedDict
 import string
 
@@ -11,7 +12,7 @@ def render_number(n, style):
     assert ns > 20, (style, seq)
     if n >= (ns-1)**2:
         raise NotImplementedError('%s > %s' % (n, (ns-1)**2))
-    elif n + 1>= 2*ns:
+    elif n + 1 >= 2*ns:
         q, r = divmod(n+2, ns)
         return seq[q] + "-" + seq[r] #+ '-x2'
     elif n >= ns:
@@ -57,7 +58,7 @@ number_styles = {
     'upper-alpha': [ZERO,] + list(string.ascii_uppercase),
     'lower-latin': [ZERO,] + list(string.ascii_lowercase), 
     'upper-latin': [ZERO,] + list(string.ascii_uppercase),
-    'decimal': map(str, range(0, 100)),
+    'decimal': map(str, range(0, 500)),
     'lower-greek': map(str, range(0, 26)), # todo
     'upper-greek': map(str, range(0, 26)), # todo
     'lower-roman': [ZERO,]+[write_roman(_).lower() for _ in range(1, 100)], 

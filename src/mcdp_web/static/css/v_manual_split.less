@@ -1,7 +1,12 @@
 @stylesheet: v_manual_split;
 
 @import 'manual';
-@import 'manual_prince';
+
+// Not sure why it was this
+// @import 'manual_prince';
+
+@import 'manual_screen';
+
 @import 'page-blurb';
 
 // This is for preview
@@ -11,3 +16,47 @@
 // @import 'debug_sections';
 
 @import 'split_toc';
+
+
+.main-section-for-page {
+    min-height: 65vh;
+}
+
+html {
+    background-color: white;
+}
+
+
+// @import 'fix_toc_on_left';
+
+body {
+    transform: none;
+}
+#not-toc {
+    transform-origin: top center;
+        transform: scale(1.5);
+}
+
+/* hide the other parts of the TOC */
+ul.toc ul:not(.contains-link-same-file) li:not(.link-same-file-inside) {
+    outline: solid 1px red;
+    color: red !important;
+    display: none;
+}
+
+/* Do not display "Section" in "Section 13.2" */
+.toc_a_for_sub .toc_what {
+    display: none;
+}
+
+/* if the same parent is part, do not show section */
+.link-same-file-direct-parent.toc_li-depth-0 li.toc_li_for_sec {
+    display: none;
+}
+
+.link-same-file-direct-parent {
+    background-color: #ddd;
+    // font-size: 120%;
+    // padding-top: 1em;
+    // padding-bottom: 1em;
+}
