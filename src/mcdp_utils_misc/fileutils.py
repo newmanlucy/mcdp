@@ -6,7 +6,6 @@ import shutil
 from tempfile import mkdtemp, NamedTemporaryFile
 
 from compmake.utils import friendly_path, make_sure_dir_exists
-from mcdp import logger
 from .path_utils import expand_all
 
 
@@ -68,6 +67,7 @@ def write_data_to_file(data, filename):
         If the data did not change, the file is not touched.
     
     """
+    from mcdp import logger
     if not isinstance(data, str):
         msg = 'Expected "data" to be a string, not %s.' % type(data).__name__
         raise ValueError(msg)
