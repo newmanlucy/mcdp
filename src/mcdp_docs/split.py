@@ -30,7 +30,7 @@ def timeit(s):
     yield
     delta = time.clock() - t0
     if show_timing:
-        logger.debug('%10d ms: %s' % ( 1000*delta, s))
+        logger.debug('%10d ms: %s' % (1000 * delta, s))
     
 def make_page(contents, head0, main_toc):
     """ Returns html """
@@ -73,8 +73,6 @@ def make_page(contents, head0, main_toc):
     return html
 
 def split_file(ifilename, directory, filename, mathjax, preamble, disqus, id2filename, assets_dir):
-#     print soup
-#     print soup.html.body
     with timeit('Reading input file...'):
         soup = read_html_doc_from_file(ifilename)
     body = soup.find('body')
@@ -161,7 +159,7 @@ class Split(QuickApp):
         assets_dir = os.path.join(output_dir, 'assets')
         
         id2filename = get_id2filename(filename2contents)
-        linkbase = 'link.html' # do not change (it's used by http://purl.org/dth)
+        linkbase = 'link.html'  # do not change (it's used by http://purl.org/dth)
         lb = create_link_base(id2filename)
         write_data_to_file(str(lb), os.path.join(output_dir, linkbase))
 
@@ -174,7 +172,7 @@ class Split(QuickApp):
                 ids_to_use.append(k)
         ids_to_use = sorted(ids_to_use)
         
-        pointed_to =[]
+        pointed_to = []
         for k in ids_to_use:
             f = id2filename[k]
             if not f in pointed_to:
@@ -221,13 +219,13 @@ def remove_spurious(output_dir, filenames):
             soup = read_html_doc_from_file(fn)
             e = soup.find('section')
             if e is not None and 'id' in e.attrs:
-                id_ = e.attrs['id'].replace(':section','')
+                id_ = e.attrs['id'].replace(':section', '')
                 from mcdp_docs.composing.cli import remove_prefix
 
                 if not 'autoid' in id_:
                     id_ = remove_prefix(id_)
                     url = 'http://purl.org/dt/master/' + id_
-                    OTHER = '<p>Maybe try this link to find the version on master (no guarantees): <a href="%s">%s</a></p>' % (url,url)
+                    OTHER = '<p>Maybe try this link to find the version on master (no guarantees): <a href="%s">%s</a></p>' % (url, url)
                     OTHER += '\n<p>If that does not work, the section was renamed.</p>'
                 else:
                     OTHER = ''     
