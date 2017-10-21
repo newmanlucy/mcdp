@@ -6,11 +6,12 @@ from contracts import contract
 from contracts.utils import indent, check_isinstance
 
 from .pretty_printing import pretty_print_dict
+import copy
 
 
 class Note(object):
 
-    def __init__(self, msg, locations=None, stacklevel=0):
+    def __init__(self, msg, locations=None, stacklevel=0, prefix=()):
         self.msg = msg
         if locations is None: locations = OrderedDict()
         self.locations = OrderedDict(locations)
@@ -19,6 +20,7 @@ class Note(object):
         module = inspect.getmodule(stack[1+stacklevel][0])
         self.created_module = module.__name__
         self.created_file = module.__file__
+        self.prefix = prefix
         
     def __str__(self):
         s = type(self).__name__
@@ -42,6 +44,9 @@ class Note(object):
         s += '\n   in module %s' % self.created_module
         s += '\n   in file %s' % self.created_file
         # TODO: use Location
+        if self.prefix:
+            p = "/".join(self.prefix)
+            s = indent(s, p + '> ')
         return s
     
 class NoteError(Note):
@@ -65,6 +70,8 @@ class AugmentedResult(object):
 
     def get_errors(self):
         return [_ for _ in self.notes if isinstance(_, NoteError)]
+    def get_warnings(self):
+        return [_ for _ in self.notes if isinstance(_, NoteWarning)]
     
     def assert_no_error(self):
         errors = self.get_errors()
@@ -100,18 +107,39 @@ class AugmentedResult(object):
             raise ValueError(msg) # FIXME
         return r
     
+    
     def summary(self):
         s = "AugmentedResult (%s)" % self.desc
 #         s += '\n' + indent(self.desc, ': ')
         if self.notes:
             d = OrderedDict()
             for i, note in enumerate(self.notes):
-                d['note %d' % i] = note
+                if isinstance(note, NoteWarning):
+                    what = 'Warning'
+                elif isinstance(note, NoteError):
+                    what = 'Error'
+                else: 
+                    assert False, note
+                
+                d['%s %d' % (what, i)] = note
             s += "\n" + indent(pretty_print_dict(d), '| ')
         else:
             s += '\n' + '| (no notes found)'
         return s
     
+    def summary_only_errors(self):
+        s = "AugmentedResult (%s)" % self.desc
+        notes = self.get_errors()
+        
+        if notes:
+            d = OrderedDict()
+            for i, note in enumerate(notes):
+                d['error %d' % i] = note
+            s += "\n" + indent(pretty_print_dict(d), '| ')
+        else:
+            s += '\n' + '| (no notes found)'
+        
+        return s
     @contract(note=Note)
     def add_note(self, note):
         self.notes.append(note)
@@ -124,14 +152,19 @@ class AugmentedResult(object):
         logger.warning(msg)
         self.add_note(NoteWarning(msg, locations, stacklevel=1))
         
-    def merge(self, other):
+    @contract(prefix='str|tuple')
+    def merge(self, other, prefix=()):
+        if isinstance(prefix, str):
+            prefix = (prefix,)
         check_isinstance(other, AugmentedResult)
         have = set()
         for n in self.notes:
-            have.add(str(n))
+            have.add(n.msg)
         for note in other.notes:
-            if not str(note) in have:
-                self.notes.append(note)
+            if not note.msg in have:
+                note2 = copy.deepcopy(note)
+                note2.prefix = prefix + note2.prefix
+                self.notes.append(note2)
         
         self.output.extend(other.output)
     
