@@ -42,7 +42,7 @@ class Note(object):
             s += '\n(No locations provided)'
         s += '\n\nCreated by function %s()' % self.created_function
         s += '\n   in module %s' % self.created_module
-        s += '\n   in file %s' % self.created_file
+#         s += '\n   in file %s' % self.created_file
         # TODO: use Location
         if self.prefix:
             p = "/".join(self.prefix)
