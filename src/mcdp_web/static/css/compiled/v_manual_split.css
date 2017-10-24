@@ -444,7 +444,7 @@ img.video-vimeo-thumbnail-deadtree {
   color: #008000;
 }
 .syntax_highlight .nc {
-  color: #0000ff;
+  color: #f19f3b;
 }
 .syntax_highlight .no {
   color: #880000;
@@ -471,7 +471,7 @@ img.video-vimeo-thumbnail-deadtree {
   color: #008000;
 }
 .syntax_highlight .nv {
-  color: #19177c;
+  color: #b5ffbb;
 }
 .syntax_highlight .ow {
   color: #aa22ff;
@@ -525,22 +525,22 @@ img.video-vimeo-thumbnail-deadtree {
   color: pink;
 }
 .syntax_highlight .ss {
-  color: #19177c;
+  color: #b5ffbb;
 }
 .syntax_highlight .bp {
   color: #009ae8;
 }
 .syntax_highlight .vc {
-  color: #19177c;
+  color: #b5ffbb;
 }
 .syntax_highlight .vg {
-  color: #19177c;
+  color: #b5ffbb;
 }
 .syntax_highlight .vi {
-  color: #19177c;
+  color: #b5ffbb;
 }
 .syntax_highlight .il {
-  color: #666666;
+  color: #666666 ;
 }
 .syntax_highlight .p {
   color: #009ae8;
